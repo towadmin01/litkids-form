@@ -262,8 +262,9 @@
   }
   .coord-meta h2{margin:0;font-size:18px;color:var(--ink);line-height:1.2;}
   .coord-sub{font-size:12px;color:var(--ink-soft);margin:2px 0 6px;}
-  .chip-row{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px;}
-  .chip-label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin-right:2px;}
+  .chip-row{display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:start;margin-top:5px;}
+  .chip-wrap{display:flex;flex-wrap:wrap;gap:5px;}
+  .chip-label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);padding-top:5px;}
   .cls-chip{font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap;}
   .cls-chip.zh{background:#FDE9E5;color:#B8382B;border:1px solid #F5C4BC;}
   .cls-chip.en{background:#E6EFFC;color:#2A5DA8;border:1px solid #BCD3F2;}
@@ -281,9 +282,52 @@
   .icon-btn.out{border-color:#D9A39C;color:var(--danger);}
   .icon-btn.out:hover{background:var(--danger);border-color:var(--danger);color:#fff;}
   .icon-btn.spin svg{animation:spin .7s linear infinite;}
+  .icon-btn:disabled,.icon-btn.is-busy{opacity:.7;cursor:progress;pointer-events:none;}
   .icon-sep{display:inline-block;width:1px;height:22px;background:var(--line);margin:0 8px;vertical-align:middle;}
   .tool-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;}
   .tool-row .btn, .tool-row a.btn{margin-top:0 !important;padding:7px 14px;font-size:12.5px;border-radius:999px;}
+
+  /* ---------- admin banner ---------- */
+  .admin-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    background:linear-gradient(120deg,#E65545,#F08A3C);color:#fff;border-radius:12px;padding:16px 20px;margin-bottom:12px;
+    box-shadow:0 4px 14px rgba(230,85,69,.25);}
+  .admin-banner h2{margin:0;font-size:24px;font-weight:800;letter-spacing:.01em;}
+  .admin-banner p{margin:2px 0 0;font-size:12.5px;opacity:.93;}
+  .print-date{display:none;font-size:12px;}
+  .global-bar{justify-content:flex-end !important;margin-bottom:4px;}
+
+  /* ---------- attendance controls ---------- */
+  .att-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;align-items:end;}
+  .att-grid .fld{display:flex;flex-direction:column;gap:5px;margin:0;}
+  .att-grid .fld > span{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);}
+  .att-grid select,.att-grid input{width:100%;height:38px;padding:0 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;margin:0;}
+  .att-grid .wide{grid-column:span 2;}
+  @media (max-width:600px){.att-grid .wide{grid-column:span 1;}}
+  .att-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+
+  /* ---------- service cards + detail ---------- */
+  .svc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px;}
+  .svc-card.zh,.dd.zh{--acc:#E65545;--tint:#FDF0EE;}
+  .svc-card.en,.dd.en{--acc:#2A6FD6;--tint:#EEF4FD;}
+  .svc-card.yn,.dd.yn{--acc:#7A47E0;--tint:#F4EEFF;}
+  .svc-card.arch{--acc:#9A9189;--tint:#F6F3EF;}
+  .svc-card{display:flex;flex-direction:column;gap:2px;padding:12px 14px 12px;border-radius:12px;border:2px solid var(--line);border-top:5px solid var(--acc);
+    background:#fff;position:relative;text-align:left;font-family:inherit;color:var(--ink);transition:box-shadow .15s,transform .15s,background .15s;}
+  button.svc-card{cursor:pointer;}
+  button.svc-card:hover{box-shadow:0 6px 16px rgba(0,0,0,.10);transform:translateY(-1px);}
+  .svc-card.sel{background:var(--tint);border-color:var(--acc);border-top-width:5px;}
+  .svc-card.sel::after{content:"\25BE";position:absolute;right:12px;top:10px;color:var(--acc);font-size:14px;}
+  .svc-name{font-weight:800;font-size:14px;}
+  .svc-sub{font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.07em;}
+  .svc-num{font-size:30px;font-weight:800;line-height:1.1;margin-top:6px;color:var(--acc);}
+  .svc-num small{font-size:11px;font-weight:700;color:var(--ink-soft);margin-left:4px;}
+  .svc-off{font-size:12px;color:#8A8279;}
+  .dd{display:none;border:1px solid var(--line);border-left:5px solid var(--acc);border-radius:10px;padding:12px 16px;background:#fff;margin-bottom:12px;}
+  .dd.sel{display:block;}
+  .dd-title{margin:0 0 6px;font-size:13px;font-weight:800;color:var(--acc);}
+  .dd-title span{color:var(--ink-soft);font-weight:600;}
+  .dd .dbar .a{background:var(--acc);}
+  .dd-foot{font-size:12px;color:var(--ink-soft);margin:-4px 0 12px;}
   /* ---------- collapsible sections ---------- */
   .sec{border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:14px;overflow:hidden;}
   .sec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;background:var(--cream);cursor:pointer;}
@@ -361,7 +405,16 @@
   #log-table-wrap th, #coordinator-table-wrap th{ background:#EEE !important; color:#000 !important; border-bottom:1px solid #999 !important; }
   table{ font-size:10px; }
   th, td{ padding:4px 5px; }
-  .card{ break-inside:avoid; }
+  .card{ break-inside:auto; }
+  tr{ break-inside:avoid; }
+  thead{ display:table-header-group; }
+  .titleblock, #blank-form-note{ display:none !important; }
+  #log-table-wrap table, #coordinator-table-wrap table{ min-width:0 !important; }
+  .admin-banner{ background:none !important; color:#000 !important; box-shadow:none; border-radius:0; border-bottom:3px solid #E65545; padding:6px 0; margin-bottom:10px; }
+  .admin-banner h2{ font-size:20px; }
+  .print-date{ display:block !important; color:#555; }
+  .dd{ display:block !important; break-inside:avoid; }
+  .svc-card{ break-inside:avoid; }
   body.printing-attendance > *:not(#attendance-print-view){ display:none !important; }
   /* background-clip:text gradients often don't render when printing (browsers frequently
      skip CSS backgrounds unless "print backgrounds" is explicitly on) - fall back to a
@@ -412,7 +465,7 @@ body.printing-attendance #attendance-print-view{ display:block; padding:20px; }
     <button class="lang-btn" data-lang="zh">中文</button>
   </div>
 
-  <p style="text-align:center;font-size:12.5px;color:var(--ink-soft);margin:0 0 16px;"
+  <p id="blank-form-note" style="text-align:center;font-size:12.5px;color:var(--ink-soft);margin:0 0 16px;"
      data-en="Prefer to fill by hand, or save a blank copy first? View or download a printable PDF: <a href='https://drive.google.com/file/d/17QPlBDqXUWYezaGsYpTBXqVdjenqJp56/view' target='_blank' rel='noopener' style='color:#C63F30;font-weight:700;'>English PDF</a> &nbsp;|&nbsp; <a href='https://drive.google.com/file/d/1QpoyvYWYgalh72DldxL9y461iemgvVhQ/view' target='_blank' rel='noopener' style='color:#C63F30;font-weight:700;'>中文 PDF</a>"
      data-zh="想先手写填写，或先保存空白表格？查看或下载可打印的 PDF： <a href='https://drive.google.com/file/d/17QPlBDqXUWYezaGsYpTBXqVdjenqJp56/view' target='_blank' rel='noopener' style='color:#C63F30;font-weight:700;'>English PDF</a> &nbsp;|&nbsp; <a href='https://drive.google.com/file/d/1QpoyvYWYgalh72DldxL9y461iemgvVhQ/view' target='_blank' rel='noopener' style='color:#C63F30;font-weight:700;'>中文 PDF</a>">
     Prefer to fill by hand, or save a blank copy first? View or download a printable PDF:
@@ -663,24 +716,26 @@ body.printing-attendance #attendance-print-view{ display:block; padding:20px; }
     <div id="admin-content" style="display:none">
       <div class="card">
         <div class="section-body">
+          <div class="admin-banner">
+            <div><h2>Admin Report</h2><p>LitKids &#20142;&#24515;&#28779;&#33495; &middot; Kids Church Ministry</p></div>
+            <span class="print-date" id="print-date"></span>
+          </div>
           <div class="global-bar">
-            <h2 style="margin:0;color:var(--coral-dark);font-size:16px;">Admin Report</h2>
             <div class="tool-row">
-              <a href="https://docs.google.com/spreadsheets/d/1Flpky_iQ2iRR_rMURyZd9Hbl0vyUyv5OeLkaKNy_Xqc/edit?usp=drive_link" target="_blank" rel="noopener" class="btn secondary" style="text-decoration:none;display:inline-block;">Open Google Sheet</a>
-              <button class="btn secondary" id="print-report">Print / Save as PDF</button>
-              <button class="btn secondary" id="change-passcode-btn">Change Passcode</button>
+              <a href="https://docs.google.com/spreadsheets/d/1Flpky_iQ2iRR_rMURyZd9Hbl0vyUyv5OeLkaKNy_Xqc/edit?usp=drive_link" target="_blank" rel="noopener" class="icon-btn" id="open-sheet-btn" title="Open Google Sheet" aria-label="Open Google Sheet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg></a>
+              <button type="button" class="icon-btn" id="print-report" title="Print / Save as PDF" aria-label="Print or save as PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg></button>
+              <button type="button" class="icon-btn" id="change-passcode-btn" title="Change passcode" aria-label="Change passcode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M14 9l2 2"/></svg></button>
               <span class="icon-sep"></span>
               <button type="button" class="icon-btn " id="sec-collapse-all" title="Collapse all sections" aria-label="Collapse all sections"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11l5-5 5 5"/><path d="M7 18l5-5 5 5"/></svg></button><button type="button" class="icon-btn " id="sec-expand-all" title="Expand all sections" aria-label="Expand all sections"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6l5 5 5-5"/><path d="M7 13l5 5 5-5"/></svg></button><button type="button" class="icon-btn " id="refresh-log" title="Refresh data" aria-label="Refresh data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 4v5h-5"/></svg></button><button type="button" class="icon-btn out" id="admin-logout" title="Log out" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button>
             </div>
           </div>
-
-      <div class="sec open" data-sec="dashboard" >
+          <div class="sec open" data-sec="dashboard" >
         <div class="sec-head" data-toggle="dashboard">
           <span class="sec-title"><span class="chev">&#9662;</span>Dashboard </span>
           <span class="sec-tools"><button type="button" class="act-btn ghost sec-btn" data-toggle-btn="dashboard">Hide</button></span>
         </div>
         <div class="sec-body">
-          <div class="tiles" id="dash-tiles"></div>
+          <div class="svc-grid" id="dash-tiles"></div>
           <div id="dash-note"></div>
           <div id="dash-groups"><p class="empty-note">Loading...</p></div></div>
       </div>
@@ -729,7 +784,7 @@ body.printing-attendance #attendance-print-view{ display:block; padding:20px; }
       <div class="sec" data-sec="coordinators" id="coordinator-manager">
         <div class="sec-head" data-toggle="coordinators">
           <span class="sec-title"><span class="chev">&#9662;</span>Coordinator Access </span>
-          <span class="sec-tools"><button type="button" class="act-btn primary" id="cm-add-btn">+ Add coordinator</button><button type="button" class="small-link" id="cm-refresh">Refresh</button><button type="button" class="act-btn ghost sec-btn" data-toggle-btn="coordinators">Hide</button></span>
+          <span class="sec-tools"><button type="button" class="act-btn primary" id="cm-add-btn">+ Add coordinator</button><button type="button" class="icon-btn" id="cm-refresh" title="Refresh list" aria-label="Refresh list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 4v5h-5"/></svg></button><button type="button" class="act-btn ghost sec-btn" data-toggle-btn="coordinators">Hide</button></span>
         </div>
         <div class="sec-body">
           <div id="cm-list"><p class="empty-note">Loading...</p></div>
@@ -742,25 +797,8 @@ body.printing-attendance #attendance-print-view{ display:block; padding:20px; }
         </div>
         <div class="sec-body">
           <div>
-            <div class="filter-bar" style="margin-bottom:0;">
-              <select id="att-congregation-admin">
-                <option value="Chinese">Chinese (Saturdays)</option>
-                <option value="English">English (Sundays)</option>
-              </select>
-              <select id="att-class-admin"></select>
-              <select id="att-quarter-admin">
-                <option value="">Custom range</option>
-                <option value="1">Q1 (Jan-Mar)</option>
-                <option value="2">Q2 (Apr-Jun)</option>
-                <option value="3">Q3 (Jul-Sep)</option>
-                <option value="4">Q4 (Oct-Dec)</option>
-              </select>
-              <label style="font-size:12px;color:var(--ink-soft);">From <select id="att-month-from-admin"></select></label>
-              <label style="font-size:12px;color:var(--ink-soft);">To <select id="att-month-to-admin"></select></label>
-              <input type="number" id="att-year-admin" style="width:90px;" placeholder="Year">
-              <button class="btn secondary" id="att-export-admin" type="button">Download CSV</button>
-              <button class="btn secondary" id="att-print-admin" type="button">Print Attendance Sheet</button>
-            </div>
+            <div class="att-grid"><label class="fld"><span>Service</span><select id="att-congregation-admin"><option value="Chinese">Chinese (Saturdays)</option><option value="English">English (Sundays)</option></select></label><label class="fld wide"><span>Class</span><select id="att-class-admin"></select></label><label class="fld"><span>Quarter</span><select id="att-quarter-admin"><option value="">Custom range</option><option value="1">Q1 (Jan-Mar)</option><option value="2">Q2 (Apr-Jun)</option><option value="3">Q3 (Jul-Sep)</option><option value="4">Q4 (Oct-Dec)</option></select></label><label class="fld"><span>From</span><select id="att-month-from-admin"></select></label><label class="fld"><span>To</span><select id="att-month-to-admin"></select></label><label class="fld"><span>Year</span><input type="number" id="att-year-admin" placeholder="Year"></label></div>
+            <div class="att-actions"><button type="button" class="act-btn" id="att-export-admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></svg> Download CSV</button><button type="button" class="act-btn primary" id="att-print-admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg> Print Attendance Sheet</button></div>
           </div></div>
       </div>
       <div class="sec" data-sec="archive" id="sec-archive">
@@ -806,28 +844,15 @@ body.printing-attendance #attendance-print-view{ display:block; padding:20px; }
             </div>
             <div class="tool-row"><button type="button" class="icon-btn " id="refresh-coordinator-log" title="Refresh" aria-label="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 4v5h-5"/></svg></button><button type="button" class="icon-btn out" id="coordinator-logout" title="Log out" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button></div>
           </div>
-          <div id="coord-dash-wrap"><div class="tiles" id="coord-tiles"></div><div id="coord-dash-groups"></div></div>
+          <div id="coord-dash-wrap"><div class="svc-grid" id="coord-tiles"></div><div id="coord-dash-groups"></div></div>
           <div id="coordinator-table-wrap">
             <p class="empty-note">Loading...</p>
           </div>
 
           <div class="subcard" style="margin-top:18px;">
             <h4>Export Attendance Template</h4>
-            <div class="filter-bar" style="margin-bottom:0;">
-              <select id="att-class-coord"></select>
-              <select id="att-quarter-coord">
-                <option value="">Custom range</option>
-                <option value="1">Q1 (Jan-Mar)</option>
-                <option value="2">Q2 (Apr-Jun)</option>
-                <option value="3">Q3 (Jul-Sep)</option>
-                <option value="4">Q4 (Oct-Dec)</option>
-              </select>
-              <label style="font-size:12px;color:var(--ink-soft);">From <select id="att-month-from-coord"></select></label>
-              <label style="font-size:12px;color:var(--ink-soft);">To <select id="att-month-to-coord"></select></label>
-              <input type="number" id="att-year-coord" style="width:90px;" placeholder="Year">
-              <button class="btn secondary" id="att-export-coord" type="button">Download CSV</button>
-              <button class="btn secondary" id="att-print-coord" type="button">Print Attendance Sheet</button>
-            </div>
+            <div class="att-grid"><label class="fld wide"><span>Class</span><select id="att-class-coord"></select></label><label class="fld"><span>Quarter</span><select id="att-quarter-coord"><option value="">Custom range</option><option value="1">Q1 (Jan-Mar)</option><option value="2">Q2 (Apr-Jun)</option><option value="3">Q3 (Jul-Sep)</option><option value="4">Q4 (Oct-Dec)</option></select></label><label class="fld"><span>From</span><select id="att-month-from-coord"></select></label><label class="fld"><span>To</span><select id="att-month-to-coord"></select></label><label class="fld"><span>Year</span><input type="number" id="att-year-coord" placeholder="Year"></label></div>
+            <div class="att-actions"><button type="button" class="act-btn" id="att-export-coord"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></svg> Download CSV</button><button type="button" class="act-btn primary" id="att-print-coord"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg> Print Attendance Sheet</button></div>
           </div>
         </div>
       </div>
@@ -870,7 +895,7 @@ function setBusy(btn, label){
   const orig = btn.innerHTML, wasDisabled = btn.disabled;
   btn.disabled = true;
   btn.classList.add("is-busy");
-  btn.innerHTML = '<span class="spinner"></span>' + escapeHtml(label);
+  btn.innerHTML = btn.classList.contains("icon-btn") ? '<span class="spinner" style="margin:0"></span>' : '<span class="spinner"></span>' + escapeHtml(label);
   return function(){ btn.disabled = wasDisabled; btn.classList.remove("is-busy"); btn.innerHTML = orig; };
 }
 
@@ -896,6 +921,7 @@ const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const ICON_EYE  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
 const ICON_ARCHIVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 002 2h12a2 2 0 002-2V8M10 12h4"/></svg>';
+const ICON_TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
 const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
 
 let pdfPreviewUrl = null, pdfPreviewFile = "document.pdf";
@@ -1250,6 +1276,11 @@ function unlockAdmin(){
 
 
 
+window.addEventListener("beforeprint", ()=>{
+  const el = document.getElementById("print-date");
+  if(el) el.textContent = "Printed " + new Date().toLocaleString("en-GB", { day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" });
+});
+
 // ---------- Admin: collapsible sections ----------
 const SEC_KEY = "lk_admin_sections";
 const SEC_DEFAULT = { dashboard:true, submissions:true, coordinators:false, attendance:false, archive:false };
@@ -1302,39 +1333,73 @@ function youthCandidates(){
   return allEntries.filter(e => isActive(e) && e.AssignedClass !== YOUTH_CLASS && (ageInMonths(e.ChildDob) || 0) >= 156);
 }
 
+// ---------- service-card dashboards (shared by admin and coordinator) ----------
+const SVC_META = {
+  chinese: { title: "中文 Chinese", sub: "Saturday", cls: "zh" },
+  english: { title: "English", sub: "Sunday", cls: "en" },
+  youth:   { title: "Youth Network", sub: "13 & above", cls: "yn" }
+};
+let adminDashSel = "chinese", coordDashSel = "";
+
+function countBy(list, pred){
+  let a = 0, o = 0;
+  list.forEach(e => { if(pred(e)){ if(isActive(e)) a++; else o++; } });
+  return { a: a, o: o };
+}
+// allowedNames = null for everything, or the array of class names this viewer may see.
+function buildGroups(list, allowedNames, withUnassigned){
+  const ok = n => !allowedNames || allowedNames.indexOf(n) !== -1;
+  const mk = (key, defs, svc) => {
+    const rows = defs.filter(c => ok(c.name)).map(c => ({ label: c.name, sub: c.ageLabel, c: countBy(list, e => e.AssignedClass === c.name) }));
+    if(!rows.length) return null;
+    const extra = (withUnassigned && svc) ? { label: "Not yet assigned", c: countBy(list, e => e.Service === svc && !e.AssignedClass) } : null;
+    const all = rows.concat(extra ? [extra] : []);
+    return { key: key, rows: rows, extra: extra,
+      a: all.reduce((t, r) => t + r.c.a, 0), o: all.reduce((t, r) => t + r.c.o, 0) };
+  };
+  return [mk("chinese", CLASS_DEFINITIONS.Chinese, "Chinese"), mk("english", CLASS_DEFINITIONS.English, "English"), mk("youth", CLASS_DEFINITIONS.Youth, null)].filter(Boolean);
+}
+function dashCardsHtml(groups, sel, scope, extraCards){
+  return groups.map(g => {
+    const m = SVC_META[g.key];
+    return `<button type="button" class="svc-card ${m.cls}${g.key === sel ? " sel" : ""}" onclick="selectDash('${scope}','${g.key}')">
+      <span class="svc-name">${m.title}</span><span class="svc-sub">${m.sub}</span>
+      <span class="svc-num">${g.a}<small>active</small></span><span class="svc-off">${g.o} inactive</span></button>`;
+  }).join("") + (extraCards || "");
+}
+function dashDetailHtml(groups, sel){
+  const max = Math.max(1, ...groups.flatMap(g => g.rows.concat(g.extra ? [g.extra] : []).map(r => r.c.a + r.c.o)));
+  const row = (r, cls) => `<div class="drow ${cls || ""}"><span>${escapeHtml(r.label)}${r.sub ? ` <span style="color:var(--ink-soft);font-size:11px;">${escapeHtml(r.sub)}</span>` : ""}</span><span class="n">${r.c.a}</span><span class="n off">${r.c.o}</span><span class="dbar"><i class="a" style="width:${r.c.a / max * 100}%"></i><i class="o" style="width:${r.c.o / max * 100}%"></i></span></div>`;
+  return groups.map(g => {
+    const m = SVC_META[g.key];
+    return `<div class="dd ${m.cls}${g.key === sel ? " sel" : ""}">
+      <h5 class="dd-title">${m.title} <span>&middot; ${m.sub} &mdash; ${g.a} active, ${g.o} inactive</span></h5>
+      <div class="drow dhead"><span>Class</span><span class="n">Active</span><span class="n">Inact.</span><span></span></div>
+      ${g.rows.map(r => row(r)).join("")}${g.extra && (g.extra.c.a + g.extra.c.o) > 0 ? row(g.extra, "dsub") : ""}</div>`;
+  }).join("");
+}
+function selectDash(scope, key){
+  if(scope === "admin"){ adminDashSel = key; renderDashboard(); }
+  else { coordDashSel = key; renderCoordinatorDashboard(); }
+}
+
 function renderDashboard(){
-  const tilesEl = document.getElementById("dash-tiles");
-  if(!tilesEl) return;
-  const total = allEntries.length, act = allEntries.filter(isActive).length, off = total - act;
+  const cardsEl = document.getElementById("dash-tiles");
+  if(!cardsEl) return;
+  const groups = buildGroups(allEntries, null, true);
+  if(!groups.some(g => g.key === adminDashSel)) adminDashSel = groups[0].key;
+  cardsEl.className = "svc-grid";
   const arch = archiveLoaded ? archiveList.length : "–";
-  const tile = (cls, n, label) => `<div class="tile ${cls}"><div class="num">${n}</div><div class="lbl">${label}</div></div>`;
-  tilesEl.innerHTML = tile("", total, "Total children") + tile("t-active", act, "Active") + tile("t-off", off, "Inactive") + tile("t-arch", arch, "Archived");
+  const archCard = `<div class="svc-card arch"><span class="svc-name">Archived</span><span class="svc-sub">Archive tab</span><span class="svc-num">${arch}<small>children</small></span><span class="svc-off">restore any time</span></div>`;
+  cardsEl.innerHTML = dashCardsHtml(groups, adminDashSel, "admin", archCard);
 
   const cands = youthCandidates();
   document.getElementById("dash-note").innerHTML = cands.length
     ? `<div class="dash-note"><span><b>${cands.length}</b> active ${cands.length === 1 ? "child is" : "children are"} 13 or older and not yet in Youth Network.</span><button type="button" class="act-btn primary" onclick="promoteYouth(this)">Move to Youth Network</button></div>`
     : "";
-
-  const count = pred => { let a = 0, o = 0; allEntries.forEach(e => { if(pred(e)){ if(isActive(e)) a++; else o++; } }); return { a, o }; };
-  const groups = [
-    { title: "中文 Chinese · Saturday", rows: CLASS_DEFINITIONS.Chinese.map(c => ({ label: c.name, sub: c.ageLabel, c: count(e => e.AssignedClass === c.name) })),
-      extra: { label: "Not yet assigned", c: count(e => e.Service === "Chinese" && !e.AssignedClass) } },
-    { title: "English · Sunday", rows: CLASS_DEFINITIONS.English.map(c => ({ label: c.name, sub: c.ageLabel, c: count(e => e.AssignedClass === c.name) })),
-      extra: { label: "Not yet assigned", c: count(e => e.Service === "English" && !e.AssignedClass) } },
-    { title: "Youth Network · 13 and above", rows: CLASS_DEFINITIONS.Youth.map(c => ({ label: c.name, sub: c.ageLabel, c: count(e => e.AssignedClass === c.name) })) }
-  ];
-  const noSvc = count(e => !e.Service && !e.AssignedClass);
-  if(noSvc.a + noSvc.o > 0) groups.push({ title: "Unassigned", rows: [{ label: "No service or class yet", c: noSvc }] });
-
-  let max = 1;
-  groups.forEach(g => g.rows.concat(g.extra ? [g.extra] : []).forEach(r => { max = Math.max(max, r.c.a + r.c.o); }));
-  const rowHtml = (r, cls) => `<div class="drow ${cls||""}"><span>${escapeHtml(r.label)}${r.sub ? ` <span style="color:var(--ink-soft);font-size:11px;">${escapeHtml(r.sub)}</span>` : ""}</span><span class="n">${r.c.a}</span><span class="n off">${r.c.o}</span><span class="dbar"><i class="a" style="width:${r.c.a / max * 100}%"></i><i class="o" style="width:${r.c.o / max * 100}%"></i></span></div>`;
-  document.getElementById("dash-groups").innerHTML = groups.map(g => {
-    const subtotal = g.rows.concat(g.extra ? [g.extra] : []).reduce((t, r) => ({ a: t.a + r.c.a, o: t.o + r.c.o }), { a: 0, o: 0 });
-    return `<div class="dgroup"><h5>${escapeHtml(g.title)} &mdash; ${subtotal.a} active${subtotal.o ? ", " + subtotal.o + " inactive" : ""}</h5>
-      <div class="drow dhead"><span>Class</span><span class="n">Active</span><span class="n">Inact.</span><span></span></div>
-      ${g.rows.map(r => rowHtml(r)).join("")}${g.extra && (g.extra.c.a + g.extra.c.o) > 0 ? rowHtml(g.extra, "dsub") : ""}</div>`;
-  }).join("");
+  const noSvc = countBy(allEntries, e => !e.Service && !e.AssignedClass);
+  document.getElementById("dash-groups").innerHTML = dashDetailHtml(groups, adminDashSel) +
+    ((noSvc.a + noSvc.o) > 0 ? `<div class="dd-foot">${noSvc.a + noSvc.o} child(ren) have no service or class yet.</div>` : "");
 }
 
 async function promoteYouth(btn){
@@ -1514,8 +1579,8 @@ function renderCoordinatorManager(){
         ${classChipGroups(c.classes || [])}
       </div>
       <div class="cm-actions">
-        <button type="button" class="act-btn" onclick="openCoordForm(${i})">${ICON_EDIT} Edit</button>
-        <button type="button" class="act-btn danger" onclick="removeCoord(${i}, this)">${ICON_X} Remove</button>
+        <button type="button" class="icon-btn" title="Edit coordinator" aria-label="Edit coordinator" onclick="openCoordForm(${i})">${ICON_EDIT}</button>
+        <button type="button" class="icon-btn out" title="Remove access" aria-label="Remove access" onclick="removeCoord(${i}, this)">${ICON_TRASH}</button>
       </div>
     </div>`).join("") + '</div>';
 }
@@ -1714,7 +1779,7 @@ function isChineseClass(name){ return CLASS_DEFINITIONS.Chinese.some(c => c.name
 function classChipGroups(classes){
   const zh = classes.filter(isChineseClass), yn = classes.filter(c => c === YOUTH_CLASS), en = classes.filter(c => !isChineseClass(c) && c !== YOUTH_CLASS);
   const row = (label, list, cls) => list.length
-    ? '<div class="chip-row"><span class="chip-label">' + label + '</span>' + list.map(c => '<span class="cls-chip ' + cls + '">' + escapeHtml(c) + '</span>').join("") + '</div>'
+    ? '<div class="chip-row"><span class="chip-label">' + label + '</span><span class="chip-wrap">' + list.map(c => '<span class="cls-chip ' + cls + '">' + escapeHtml(c) + '</span>').join("") + '</span></div>'
     : "";
   return row("Chinese · Sat", zh, "zh") + row("English · Sun", en, "en") + row("Youth · 13+", yn, "yn") || '<div class="coord-sub">No classes assigned</div>';
 }
@@ -1751,25 +1816,15 @@ document.getElementById("refresh-coordinator-log").addEventListener("click", loa
 let coordinatorEditingId = null;
 
 function renderCoordinatorDashboard(){
-  const tilesEl = document.getElementById("coord-tiles");
-  if(!tilesEl) return;
-  const list = coordinatorEntries;
-  const total = list.length, act = list.filter(isActive).length, off = total - act;
-  const tile = (cls, n, label) => `<div class="tile ${cls}"><div class="num">${n}</div><div class="lbl">${label}</div></div>`;
-  tilesEl.style.gridTemplateColumns = "repeat(3,1fr)";
-  tilesEl.innerHTML = tile("", total, "Total children") + tile("t-active", act, "Active") + tile("t-off", off, "Inactive");
-  const rows = coordinatorClasses.map(name => {
-    let a = 0, o = 0;
-    list.forEach(e => { if(e.AssignedClass === name){ if(isActive(e)) a++; else o++; } });
-    return { name: name, sub: ageLabelFor(name), a: a, o: o };
-  });
-  const max = Math.max(1, ...rows.map(r => r.a + r.o));
-  document.getElementById("coord-dash-groups").innerHTML = rows.length ? `<div class="dgroup" style="margin-bottom:16px;">
-    <div class="drow dhead"><span>My classes</span><span class="n">Active</span><span class="n">Inact.</span><span></span></div>
-    ${rows.map(r => `<div class="drow"><span>${escapeHtml(r.name)}${r.sub ? ` <span style="color:var(--ink-soft);font-size:11px;">${escapeHtml(r.sub)}</span>` : ""}</span><span class="n">${r.a}</span><span class="n off">${r.o}</span><span class="dbar"><i class="a" style="width:${r.a / max * 100}%"></i><i class="o" style="width:${r.o / max * 100}%"></i></span></div>`).join("")}
-  </div>` : "";
+  const cardsEl = document.getElementById("coord-tiles");
+  if(!cardsEl) return;
+  const groups = buildGroups(coordinatorEntries, coordinatorClasses, false);
+  cardsEl.className = "svc-grid";
+  if(!groups.length){ cardsEl.innerHTML = ""; document.getElementById("coord-dash-groups").innerHTML = ""; return; }
+  if(!groups.some(g => g.key === coordDashSel)) coordDashSel = groups[0].key;
+  cardsEl.innerHTML = dashCardsHtml(groups, coordDashSel, "coord", "");
+  document.getElementById("coord-dash-groups").innerHTML = dashDetailHtml(groups, coordDashSel);
 }
-
 
 function renderCoordinatorTable(){
   const wrap = document.getElementById("coordinator-table-wrap");
