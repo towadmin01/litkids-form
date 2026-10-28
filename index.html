@@ -269,6 +269,21 @@
   .cls-chip.en{background:#E6EFFC;color:#2A5DA8;border:1px solid #BCD3F2;}
 
 
+
+  /* ---------- icon buttons ---------- */
+  .icon-btn{
+    width:36px;height:36px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);
+    display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;margin:0 2px;
+    transition:background .15s,color .15s,border-color .15s,box-shadow .15s;vertical-align:middle;
+  }
+  .icon-btn svg{width:17px;height:17px;}
+  .icon-btn:hover{background:var(--coral);border-color:var(--coral);color:#fff;box-shadow:0 2px 6px rgba(198,63,48,.25);}
+  .icon-btn.out{border-color:#D9A39C;color:var(--danger);}
+  .icon-btn.out:hover{background:var(--danger);border-color:var(--danger);color:#fff;}
+  .icon-btn.spin svg{animation:spin .7s linear infinite;}
+  .icon-sep{display:inline-block;width:1px;height:22px;background:var(--line);margin:0 8px;vertical-align:middle;}
+  .tool-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;}
+  .tool-row .btn, .tool-row a.btn{margin-top:0 !important;padding:7px 14px;font-size:12.5px;border-radius:999px;}
   /* ---------- collapsible sections ---------- */
   .sec{border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:14px;overflow:hidden;}
   .sec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;background:var(--cream);cursor:pointer;}
@@ -338,7 +353,7 @@
   .lang-toggle, .tabs, #print-report, #refresh-log, .btn, .chip, .quickfill,
   a[href*="docs.google.com"], #admin-gate, .filter-bar{ display:none !important; }
   #panel-admin.active .card{ border:none; box-shadow:none; }
-  #pdf-modal, #toast, .act-stack, #coordinator-manager, #sec-archive, .sec-tools, .global-bar{ display:none !important; }
+  #pdf-modal, #toast, .act-stack, .icon-btn, #coord-dash-wrap, #coordinator-manager, #sec-archive, .sec-tools, .global-bar{ display:none !important; }
   .sec{ border:none; }
   .sec-head{ background:none; padding:4px 0; }
   .sec:not(.open) .sec-body{ display:none; }
@@ -650,14 +665,12 @@ body.printing-attendance #attendance-print-view{ display:block; padding:20px; }
         <div class="section-body">
           <div class="global-bar">
             <h2 style="margin:0;color:var(--coral-dark);font-size:16px;">Admin Report</h2>
-            <div>
-              <a href="https://docs.google.com/spreadsheets/d/1Flpky_iQ2iRR_rMURyZd9Hbl0vyUyv5OeLkaKNy_Xqc/edit?usp=drive_link" target="_blank" rel="noopener" class="btn secondary" style="text-decoration:none;display:inline-block;margin-top:0;">Open Google Sheet</a>
-              <button class="btn secondary" id="print-report" style="margin-top:0;">Print / Save as PDF</button>
-              <button class="btn secondary" id="change-passcode-btn" style="margin-top:0;">Change Passcode</button>
-              <button class="small-link" id="sec-collapse-all" style="margin-left:12px">Collapse all</button>
-              <button class="small-link" id="sec-expand-all" style="margin-left:8px">Expand all</button>
-              <button class="small-link" id="refresh-log" style="margin-left:12px">Refresh</button>
-              <button class="small-link" id="admin-logout" style="margin-left:12px;color:var(--coral-dark);">Log Out</button>
+            <div class="tool-row">
+              <a href="https://docs.google.com/spreadsheets/d/1Flpky_iQ2iRR_rMURyZd9Hbl0vyUyv5OeLkaKNy_Xqc/edit?usp=drive_link" target="_blank" rel="noopener" class="btn secondary" style="text-decoration:none;display:inline-block;">Open Google Sheet</a>
+              <button class="btn secondary" id="print-report">Print / Save as PDF</button>
+              <button class="btn secondary" id="change-passcode-btn">Change Passcode</button>
+              <span class="icon-sep"></span>
+              <button type="button" class="icon-btn " id="sec-collapse-all" title="Collapse all sections" aria-label="Collapse all sections"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11l5-5 5 5"/><path d="M7 18l5-5 5 5"/></svg></button><button type="button" class="icon-btn " id="sec-expand-all" title="Expand all sections" aria-label="Expand all sections"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6l5 5 5-5"/><path d="M7 13l5 5 5-5"/></svg></button><button type="button" class="icon-btn " id="refresh-log" title="Refresh data" aria-label="Refresh data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 4v5h-5"/></svg></button><button type="button" class="icon-btn out" id="admin-logout" title="Log out" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button>
             </div>
           </div>
 
@@ -791,11 +804,9 @@ body.printing-attendance #attendance-print-view{ display:block; padding:20px; }
                 <div id="coordinator-chips"></div>
               </div>
             </div>
-            <div>
-              <button class="small-link" id="refresh-coordinator-log">Refresh</button>
-              <button class="small-link" id="coordinator-logout" style="margin-left:12px;color:var(--coral-dark);">Log Out</button>
-            </div>
+            <div class="tool-row"><button type="button" class="icon-btn " id="refresh-coordinator-log" title="Refresh" aria-label="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 4v5h-5"/></svg></button><button type="button" class="icon-btn out" id="coordinator-logout" title="Log out" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button></div>
           </div>
+          <div id="coord-dash-wrap"><div class="tiles" id="coord-tiles"></div><div id="coord-dash-groups"></div></div>
           <div id="coordinator-table-wrap">
             <p class="empty-note">Loading...</p>
           </div>
@@ -1739,8 +1750,30 @@ document.getElementById("refresh-coordinator-log").addEventListener("click", loa
 
 let coordinatorEditingId = null;
 
+function renderCoordinatorDashboard(){
+  const tilesEl = document.getElementById("coord-tiles");
+  if(!tilesEl) return;
+  const list = coordinatorEntries;
+  const total = list.length, act = list.filter(isActive).length, off = total - act;
+  const tile = (cls, n, label) => `<div class="tile ${cls}"><div class="num">${n}</div><div class="lbl">${label}</div></div>`;
+  tilesEl.style.gridTemplateColumns = "repeat(3,1fr)";
+  tilesEl.innerHTML = tile("", total, "Total children") + tile("t-active", act, "Active") + tile("t-off", off, "Inactive");
+  const rows = coordinatorClasses.map(name => {
+    let a = 0, o = 0;
+    list.forEach(e => { if(e.AssignedClass === name){ if(isActive(e)) a++; else o++; } });
+    return { name: name, sub: ageLabelFor(name), a: a, o: o };
+  });
+  const max = Math.max(1, ...rows.map(r => r.a + r.o));
+  document.getElementById("coord-dash-groups").innerHTML = rows.length ? `<div class="dgroup" style="margin-bottom:16px;">
+    <div class="drow dhead"><span>My classes</span><span class="n">Active</span><span class="n">Inact.</span><span></span></div>
+    ${rows.map(r => `<div class="drow"><span>${escapeHtml(r.name)}${r.sub ? ` <span style="color:var(--ink-soft);font-size:11px;">${escapeHtml(r.sub)}</span>` : ""}</span><span class="n">${r.a}</span><span class="n off">${r.o}</span><span class="dbar"><i class="a" style="width:${r.a / max * 100}%"></i><i class="o" style="width:${r.o / max * 100}%"></i></span></div>`).join("")}
+  </div>` : "";
+}
+
+
 function renderCoordinatorTable(){
   const wrap = document.getElementById("coordinator-table-wrap");
+  renderCoordinatorDashboard();
   if(coordinatorEntries.length === 0){
     wrap.innerHTML = '<p class="empty-note">No students assigned to your class(es) yet.</p>';
     return;
