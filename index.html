@@ -327,6 +327,18 @@
   .dd-title{margin:0 0 6px;font-size:13px;font-weight:800;color:var(--acc);}
   .dd-title span{color:var(--ink-soft);font-weight:600;}
   .dd .dbar .a{background:var(--acc);}
+  .drow.clickable{cursor:pointer;border-radius:6px;transition:background .12s;}
+  .drow.clickable:hover{background:var(--tint,#FBF7F2);}
+  .drow .car{display:inline-block;width:14px;color:var(--acc,var(--coral-dark));font-size:11px;transition:transform .15s;}
+  .drow.open .car{transform:rotate(90deg);}
+  .cls-list{margin:2px 0 8px 14px;padding:6px 10px;background:var(--tint,#FBF7F2);border-radius:8px;border-left:3px solid var(--acc,var(--coral));}
+  .cls-list .stu{display:flex;gap:10px;align-items:center;padding:4px 2px;font-size:12.5px;border-bottom:1px dashed rgba(0,0,0,.08);}
+  .cls-list .stu:last-of-type{border-bottom:none;}
+  .cls-list .stu .no{width:22px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .cls-list .stu .nm{flex:1;}
+  .cls-list .stu.off .nm{color:#8A8279;}
+  .cls-list .stu .ag{color:var(--ink-soft);font-size:11.5px;}
+  .cls-list .go{margin-top:6px;}
   .dd-foot{font-size:12px;color:var(--ink-soft);margin:-4px 0 12px;}
   /* ---------- collapsible sections ---------- */
   .sec{border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:14px;overflow:hidden;}
@@ -1350,9 +1362,9 @@ function countBy(list, pred){
 function buildGroups(list, allowedNames, withUnassigned){
   const ok = n => !allowedNames || allowedNames.indexOf(n) !== -1;
   const mk = (key, defs, svc) => {
-    const rows = defs.filter(c => ok(c.name)).map(c => ({ label: c.name, sub: c.ageLabel, c: countBy(list, e => e.AssignedClass === c.name) }));
+    const rows = defs.filter(c => ok(c.name)).map(c => { const pred = e => e.AssignedClass === c.name; return { label: c.name, sub: c.ageLabel, pred: pred, isClass: true, c: countBy(list, pred) }; });
     if(!rows.length) return null;
-    const extra = (withUnassigned && svc) ? { label: "Not yet assigned", c: countBy(list, e => e.Service === svc && !e.AssignedClass) } : null;
+    const extra = (withUnassigned && svc) ? (() => { const pred = e => e.Service === svc && !e.AssignedClass; return { label: "Not yet assigned", pred: pred, isClass: false, c: countBy(list, pred) }; })() : null;
     const all = rows.concat(extra ? [extra] : []);
     return { key: key, rows: rows, extra: extra,
       a: all.reduce((t, r) => t + r.c.a, 0), o: all.reduce((t, r) => t + r.c.o, 0) };
@@ -1367,16 +1379,47 @@ function dashCardsHtml(groups, sel, scope, extraCards){
       <span class="svc-num">${g.a}<small>active</small></span><span class="svc-off">${g.o} inactive</span></button>`;
   }).join("") + (extraCards || "");
 }
-function dashDetailHtml(groups, sel){
+const openRows = { admin: new Set(), coord: new Set() };
+
+function studentListHtml(r, list, scope){
+  const kids = list.filter(r.pred).sort((a, b) => (a.ChildFullName || "").localeCompare(b.ChildFullName || ""));
+  const rowsHtml = kids.map((e, i) => `<div class="stu${isActive(e) ? "" : " off"}"><span class="no">${i + 1}</span>
+      <span class="nm">${escapeHtml(e.ChildFullName || "")}${e.ChildNickname ? ` <span style="color:var(--ink-soft)">(${escapeHtml(e.ChildNickname)})</span>` : ""}</span>
+      <span class="ag">${e.ChildAge ? "Age " + escapeHtml(String(e.ChildAge)) : ""}</span>
+      <span class="pill ${isActive(e) ? "on" : "off"}">${isActive(e) ? "Active" : "Inactive"}</span></div>`).join("");
+  const go = (scope === "admin" && r.isClass)
+    ? `<div class="go"><button type="button" class="act-btn" onclick="showClassInTable(${JSON.stringify(r.label).replace(/"/g, "&quot;")})">Show in main list</button></div>`
+    : "";
+  return `<div class="cls-list">${rowsHtml || '<div class="stu"><span class="nm" style="color:var(--ink-soft)">No children</span></div>'}${go}</div>`;
+}
+
+function dashDetailHtml(groups, sel, list, scope){
   const max = Math.max(1, ...groups.flatMap(g => g.rows.concat(g.extra ? [g.extra] : []).map(r => r.c.a + r.c.o)));
-  const row = (r, cls) => `<div class="drow ${cls || ""}"><span>${escapeHtml(r.label)}${r.sub ? ` <span style="color:var(--ink-soft);font-size:11px;">${escapeHtml(r.sub)}</span>` : ""}</span><span class="n">${r.c.a}</span><span class="n off">${r.c.o}</span><span class="dbar"><i class="a" style="width:${r.c.a / max * 100}%"></i><i class="o" style="width:${r.c.o / max * 100}%"></i></span></div>`;
+  const row = (g, r, cls) => {
+    const key = g.key + "|" + r.label, total = r.c.a + r.c.o, open = openRows[scope].has(key) && total > 0;
+    const attrs = total > 0 ? ` onclick="toggleClassRow('${scope}', this.dataset.key)" data-key="${escapeHtml(key)}" title="Click to ${open ? "hide" : "see"} the students"` : "";
+    return `<div class="drow ${cls || ""}${total > 0 ? " clickable" : ""}${open ? " open" : ""}"${attrs}><span><span class="car">${total > 0 ? "&#9656;" : ""}</span>${escapeHtml(r.label)}${r.sub ? ` <span style="color:var(--ink-soft);font-size:11px;">${escapeHtml(r.sub)}</span>` : ""}</span><span class="n">${r.c.a}</span><span class="n off">${r.c.o}</span><span class="dbar"><i class="a" style="width:${r.c.a / max * 100}%"></i><i class="o" style="width:${r.c.o / max * 100}%"></i></span></div>${open ? studentListHtml(r, list, scope) : ""}`;
+  };
   return groups.map(g => {
     const m = SVC_META[g.key];
     return `<div class="dd ${m.cls}${g.key === sel ? " sel" : ""}">
       <h5 class="dd-title">${m.title} <span>&middot; ${m.sub} &mdash; ${g.a} active, ${g.o} inactive</span></h5>
-      <div class="drow dhead"><span>Class</span><span class="n">Active</span><span class="n">Inact.</span><span></span></div>
-      ${g.rows.map(r => row(r)).join("")}${g.extra && (g.extra.c.a + g.extra.c.o) > 0 ? row(g.extra, "dsub") : ""}</div>`;
+      <div class="drow dhead"><span>Class &mdash; click to see students</span><span class="n">Active</span><span class="n">Inact.</span><span></span></div>
+      ${g.rows.map(r => row(g, r)).join("")}${g.extra && (g.extra.c.a + g.extra.c.o) > 0 ? row(g, g.extra, "dsub") : ""}</div>`;
   }).join("");
+}
+function toggleClassRow(scope, key){
+  const set = openRows[scope];
+  if(set.has(key)) set.delete(key); else set.add(key);
+  if(scope === "admin") renderDashboard(); else renderCoordinatorDashboard();
+}
+function showClassInTable(className){
+  document.getElementById("filter-congregation").value = "";
+  document.getElementById("filter-class").value = className;
+  setSection("submissions", true);
+  renderTable();
+  const el = document.querySelector('[data-sec="submissions"]');
+  if(el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 function selectDash(scope, key){
   if(scope === "admin"){ adminDashSel = key; renderDashboard(); }
@@ -1398,7 +1441,7 @@ function renderDashboard(){
     ? `<div class="dash-note"><span><b>${cands.length}</b> active ${cands.length === 1 ? "child is" : "children are"} 13 or older and not yet in Youth Network.</span><button type="button" class="act-btn primary" onclick="promoteYouth(this)">Move to Youth Network</button></div>`
     : "";
   const noSvc = countBy(allEntries, e => !e.Service && !e.AssignedClass);
-  document.getElementById("dash-groups").innerHTML = dashDetailHtml(groups, adminDashSel) +
+  document.getElementById("dash-groups").innerHTML = dashDetailHtml(groups, adminDashSel, allEntries, "admin") +
     ((noSvc.a + noSvc.o) > 0 ? `<div class="dd-foot">${noSvc.a + noSvc.o} child(ren) have no service or class yet.</div>` : "");
 }
 
@@ -1671,7 +1714,7 @@ document.getElementById("admin-logout").addEventListener("click", ()=>{
   adminPasscodeValue = "";
   allEntries = [];
   coordList = [];
-  archiveList = []; archiveLoaded = false; secHooked = {};
+  archiveList = []; archiveLoaded = false; secHooked = {}; openRows.admin.clear();
   closeCoordForm();
   document.getElementById("admin-pass").value = "";
   document.getElementById("admin-gate-status").innerHTML = "";
@@ -1790,6 +1833,7 @@ document.getElementById("coordinator-logout").addEventListener("click", ()=>{
   coordinatorClasses = [];
   coordinatorEntries = [];
   coordinatorName = "";
+  openRows.coord.clear();
   document.getElementById("coordinator-pass").value = "";
   document.getElementById("coordinator-gate-status").innerHTML = "";
   document.getElementById("coordinator-content").style.display = "none";
@@ -1823,7 +1867,7 @@ function renderCoordinatorDashboard(){
   if(!groups.length){ cardsEl.innerHTML = ""; document.getElementById("coord-dash-groups").innerHTML = ""; return; }
   if(!groups.some(g => g.key === coordDashSel)) coordDashSel = groups[0].key;
   cardsEl.innerHTML = dashCardsHtml(groups, coordDashSel, "coord", "");
-  document.getElementById("coord-dash-groups").innerHTML = dashDetailHtml(groups, coordDashSel);
+  document.getElementById("coord-dash-groups").innerHTML = dashDetailHtml(groups, coordDashSel, coordinatorEntries, "coord");
 }
 
 function renderCoordinatorTable(){
