@@ -268,6 +268,48 @@
   .cls-chip.zh{background:#FDE9E5;color:#B8382B;border:1px solid #F5C4BC;}
   .cls-chip.en{background:#E6EFFC;color:#2A5DA8;border:1px solid #BCD3F2;}
 
+
+  /* ---------- collapsible sections ---------- */
+  .sec{border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:14px;overflow:hidden;}
+  .sec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;background:var(--cream);cursor:pointer;}
+  .sec.open .sec-head{border-bottom:1px solid var(--line);}
+  .sec-title{display:flex;align-items:center;gap:9px;font-weight:800;font-size:13.5px;color:var(--ink);letter-spacing:.01em;}
+  .sec-title .chev{display:inline-block;width:18px;transition:transform .2s;color:var(--coral-dark);}
+  .sec:not(.open) .chev{transform:rotate(-90deg);}
+  .sec-count{font-weight:600;font-size:11.5px;color:var(--ink-soft);background:#fff;border:1px solid var(--line);border-radius:999px;padding:1px 9px;}
+  .sec-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .sec-body{display:none;padding:14px;}
+  .sec.open .sec-body{display:block;}
+  .global-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+
+  /* ---------- dashboard ---------- */
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+  @media (max-width:600px){.tiles{grid-template-columns:repeat(2,1fr);}}
+  .tile{border:1px solid var(--line);border-left:3px solid var(--coral);border-radius:10px;padding:10px 12px;background:#fff;}
+  .tile .num{font-size:24px;font-weight:800;color:var(--ink);line-height:1.1;}
+  .tile .lbl{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin-top:3px;}
+  .tile.t-active{border-left-color:#2C6B4F;} .tile.t-off{border-left-color:#B9AEA3;} .tile.t-arch{border-left-color:#8C52FF;}
+  .dash-note{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#FFF5E0;border:1px solid #F1DDA8;color:#7A5A12;border-radius:10px;padding:9px 12px;font-size:12.5px;margin-bottom:14px;}
+  .dgroup{margin-bottom:12px;}
+  .dgroup h5{margin:0 0 4px;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--coral-dark);}
+  .drow{display:grid;grid-template-columns:minmax(120px,1.4fr) 44px 44px minmax(80px,2fr);align-items:center;gap:10px;padding:6px 2px;border-bottom:1px dashed var(--line);font-size:12.5px;}
+  .drow.dhead{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);border-bottom:1px solid var(--line);}
+  .drow .n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;}
+  .drow .n.off{color:#9A9189;font-weight:600;}
+  .dbar{display:flex;height:8px;border-radius:99px;overflow:hidden;background:#F4EFE9;}
+  .dbar i{display:block;height:100%;} .dbar .a{background:var(--coral);} .dbar .o{background:#CFC6BC;}
+  .drow.dsub{color:var(--ink-soft);font-style:italic;}
+
+  /* ---------- status pills ---------- */
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid transparent;font-family:inherit;}
+  .pill.on{background:#E3F2EA;color:#2C6B4F;border-color:#B8DCC8;}
+  .pill.off{background:#EEE9E3;color:#7C746B;border-color:#D9D1C8;}
+  button.pill{cursor:pointer;} button.pill:hover{filter:brightness(.95);} button.pill:disabled{opacity:.6;cursor:progress;}
+  .cls-chip.yn{background:#F0E9FF;color:#6A3CCB;border:1px solid #D6C6F7;}
+  .arch-row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:9px 12px;border-bottom:1px solid var(--line);font-size:12.5px;}
+  .arch-row:last-child{border-bottom:none;}
+  .bk-line{font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;line-height:1.7;}
+  .bk-line b{color:var(--ink);}
   /* ---------- coordinator access manager ---------- */
   .cm-list{border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;}
   .cm-item{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--line);}
@@ -296,7 +338,10 @@
   .lang-toggle, .tabs, #print-report, #refresh-log, .btn, .chip, .quickfill,
   a[href*="docs.google.com"], #admin-gate, .filter-bar{ display:none !important; }
   #panel-admin.active .card{ border:none; box-shadow:none; }
-  #pdf-modal, #toast, .act-stack, #coordinator-manager{ display:none !important; }
+  #pdf-modal, #toast, .act-stack, #coordinator-manager, #sec-archive, .sec-tools, .global-bar{ display:none !important; }
+  .sec{ border:none; }
+  .sec-head{ background:none; padding:4px 0; }
+  .sec:not(.open) .sec-body{ display:none; }
   #log-table-wrap, #coordinator-table-wrap{ border:none; overflow:visible; }
   #log-table-wrap th, #coordinator-table-wrap th{ background:#EEE !important; color:#000 !important; border-bottom:1px solid #999 !important; }
   table{ font-size:10px; }
@@ -603,16 +648,35 @@ body.printing-attendance #attendance-print-view{ display:block; padding:20px; }
     <div id="admin-content" style="display:none">
       <div class="card">
         <div class="section-body">
-          <div class="toolbar">
-            <h2 style="margin:0;color:var(--coral-dark);font-size:16px;">All submissions</h2>
+          <div class="global-bar">
+            <h2 style="margin:0;color:var(--coral-dark);font-size:16px;">Admin Report</h2>
             <div>
-              <a href="https://docs.google.com/spreadsheets/d/1Flpky_iQ2iRR_rMURyZd9Hbl0vyUyv5OeLkaKNy_Xqc/edit?usp=drive_link" target="_blank" rel="noopener" class="btn secondary" style="text-decoration:none;display:inline-block;">Open Google Sheet</a>
-              <button class="btn secondary" id="print-report">Print / Save as PDF</button>
-              <button class="btn secondary" id="change-passcode-btn">Change Passcode</button>
+              <a href="https://docs.google.com/spreadsheets/d/1Flpky_iQ2iRR_rMURyZd9Hbl0vyUyv5OeLkaKNy_Xqc/edit?usp=drive_link" target="_blank" rel="noopener" class="btn secondary" style="text-decoration:none;display:inline-block;margin-top:0;">Open Google Sheet</a>
+              <button class="btn secondary" id="print-report" style="margin-top:0;">Print / Save as PDF</button>
+              <button class="btn secondary" id="change-passcode-btn" style="margin-top:0;">Change Passcode</button>
+              <button class="small-link" id="sec-collapse-all" style="margin-left:12px">Collapse all</button>
+              <button class="small-link" id="sec-expand-all" style="margin-left:8px">Expand all</button>
               <button class="small-link" id="refresh-log" style="margin-left:12px">Refresh</button>
               <button class="small-link" id="admin-logout" style="margin-left:12px;color:var(--coral-dark);">Log Out</button>
             </div>
           </div>
+
+      <div class="sec open" data-sec="dashboard" >
+        <div class="sec-head" data-toggle="dashboard">
+          <span class="sec-title"><span class="chev">&#9662;</span>Dashboard </span>
+          <span class="sec-tools"><button type="button" class="act-btn ghost sec-btn" data-toggle-btn="dashboard">Hide</button></span>
+        </div>
+        <div class="sec-body">
+          <div class="tiles" id="dash-tiles"></div>
+          <div id="dash-note"></div>
+          <div id="dash-groups"><p class="empty-note">Loading...</p></div></div>
+      </div>
+      <div class="sec open" data-sec="submissions" >
+        <div class="sec-head" data-toggle="submissions">
+          <span class="sec-title"><span class="chev">&#9662;</span>All submissions <span class="sec-count" id="sub-count"></span></span>
+          <span class="sec-tools"><button type="button" class="act-btn ghost sec-btn" data-toggle-btn="submissions">Hide</button></span>
+        </div>
+        <div class="sec-body">
           <div class="filter-bar">
             <input type="text" id="filter-name" placeholder="Search by child name...">
             <input type="number" id="filter-age-min" placeholder="Age min" style="width:90px;">
@@ -630,6 +694,11 @@ body.printing-attendance #attendance-print-view{ display:block; padding:20px; }
               <option value="Yes">Photo OK: Yes</option>
               <option value="No">Photo OK: No</option>
             </select>
+            <select id="filter-status">
+              <option value="">Status (All)</option>
+              <option value="Active">Active only</option>
+              <option value="Inactive">Inactive only</option>
+            </select>
             <select id="sort-by">
               <option value="name-asc">Name (A→Z)</option>
               <option value="name-desc">Name (Z→A)</option>
@@ -642,22 +711,24 @@ body.printing-attendance #attendance-print-view{ display:block; padding:20px; }
           </div>
           <div id="log-table-wrap">
             <p class="empty-note">Loading submissions...</p>
-          </div>
-
-          <div class="subcard" id="coordinator-manager" style="margin-top:18px;">
-            <div class="toolbar" style="margin-bottom:10px;">
-              <h4 style="margin:0;">Coordinator Access</h4>
-              <div>
-                <button type="button" class="act-btn primary" id="cm-add-btn">+ Add coordinator</button>
-                <button type="button" class="small-link" id="cm-refresh" style="margin-left:10px;">Refresh</button>
-              </div>
-            </div>
-            <div id="cm-list"><p class="empty-note">Loading...</p></div>
-            <div id="cm-form-wrap"></div>
-          </div>
-
-          <div class="subcard" style="margin-top:18px;">
-            <h4>Export Attendance Template</h4>
+          </div></div>
+      </div>
+      <div class="sec" data-sec="coordinators" id="coordinator-manager">
+        <div class="sec-head" data-toggle="coordinators">
+          <span class="sec-title"><span class="chev">&#9662;</span>Coordinator Access </span>
+          <span class="sec-tools"><button type="button" class="act-btn primary" id="cm-add-btn">+ Add coordinator</button><button type="button" class="small-link" id="cm-refresh">Refresh</button><button type="button" class="act-btn ghost sec-btn" data-toggle-btn="coordinators">Hide</button></span>
+        </div>
+        <div class="sec-body">
+          <div id="cm-list"><p class="empty-note">Loading...</p></div>
+          <div id="cm-form-wrap"></div></div>
+      </div>
+      <div class="sec" data-sec="attendance" >
+        <div class="sec-head" data-toggle="attendance">
+          <span class="sec-title"><span class="chev">&#9662;</span>Attendance Sheets </span>
+          <span class="sec-tools"><button type="button" class="act-btn ghost sec-btn" data-toggle-btn="attendance">Hide</button></span>
+        </div>
+        <div class="sec-body">
+          <div>
             <div class="filter-bar" style="margin-bottom:0;">
               <select id="att-congregation-admin">
                 <option value="Chinese">Chinese (Saturdays)</option>
@@ -677,7 +748,22 @@ body.printing-attendance #attendance-print-view{ display:block; padding:20px; }
               <button class="btn secondary" id="att-export-admin" type="button">Download CSV</button>
               <button class="btn secondary" id="att-print-admin" type="button">Print Attendance Sheet</button>
             </div>
+          </div></div>
+      </div>
+      <div class="sec" data-sec="archive" id="sec-archive">
+        <div class="sec-head" data-toggle="archive">
+          <span class="sec-title"><span class="chev">&#9662;</span>Archive &amp; Backup <span class="sec-count" id="arch-count"></span></span>
+          <span class="sec-tools"><button type="button" class="act-btn ghost sec-btn" data-toggle-btn="archive">Hide</button></span>
+        </div>
+        <div class="sec-body">
+          <p class="bk-line" id="bk-status">Loading backup status...</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+            <button type="button" class="act-btn primary" id="bk-now-btn">Back up now</button>
+            <button type="button" class="act-btn ghost" id="bk-refresh-btn">Refresh</button>
+            <button type="button" class="act-btn" id="archive-inactive-btn">Archive all Inactive</button>
           </div>
+          <div id="archive-list"><p class="empty-note">Loading archive...</p></div></div>
+      </div>
         </div>
       </div>
     </div>
@@ -798,6 +884,7 @@ function skeletonHtml(rows, caption){
 const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
 const ICON_EYE  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+const ICON_ARCHIVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 002 2h12a2 2 0 002-2V8M10 12h4"/></svg>';
 const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
 
 let pdfPreviewUrl = null, pdfPreviewFile = "document.pdf";
@@ -942,11 +1029,18 @@ const CLASS_DEFINITIONS = {
     { name: "Toddler & Preschool",    minMonths: 18,  maxMonths: 71,  dayType: "Sunday", ageLabel: "18 months to 5 yrs." },
     { name: "Lower Primary",          minMonths: 72,  maxMonths: 107, dayType: "Sunday", ageLabel: "6 to 8 yrs." },
     { name: "Upper Primary",          minMonths: 108, maxMonths: 155, dayType: "Sunday", ageLabel: "9 to 12 yrs." }
+  ],
+  // Children 13 and above. Not tied to one service, so dayType is null and each
+  // attendance sheet falls back to the day of the service it was opened under.
+  Youth: [
+    { name: "Youth Network",          minMonths: 156, maxMonths: 9999, dayType: null, ageLabel: "13 yrs. & above" }
   ]
 };
+const YOUTH_CLASS = "Youth Network";
+function allClassDefs(){ return CLASS_DEFINITIONS.Chinese.concat(CLASS_DEFINITIONS.English, CLASS_DEFINITIONS.Youth); }
 
 function ageLabelFor(className){
-  const all = CLASS_DEFINITIONS.Chinese.concat(CLASS_DEFINITIONS.English);
+  const all = allClassDefs();
   const match = all.find(c => c.name === className);
   return match ? match.ageLabel : "";
 }
@@ -966,7 +1060,8 @@ function ageInMonths(dobStr){
 }
 
 function classListFor(congregation){
-  return CLASS_DEFINITIONS[congregation] || [];
+  const base = CLASS_DEFINITIONS[congregation];
+  return base ? base.concat(CLASS_DEFINITIONS.Youth) : [];
 }
 
 function suggestClass(congregation, dobStr){
@@ -980,7 +1075,7 @@ function suggestClass(congregation, dobStr){
 function dayTypeForClass(congregation, className){
   const list = classListFor(congregation);
   const match = list.find(c => c.name === className);
-  return match ? match.dayType : (congregation === "Chinese" ? "Saturday" : "Sunday");
+  return (match && match.dayType) ? match.dayType : (congregation === "Chinese" ? "Saturday" : "Sunday");
 }
 
 document.querySelectorAll(".lang-btn").forEach(btn=>{
@@ -1131,6 +1226,9 @@ function unlockAdmin(){
       renderTable();
       populateAttendanceControls("admin");
       loadCoordinatorList();
+      loadArchive();
+      secHooked = {};
+      applySections();
     })
     .catch(()=>{
       statusEl.innerHTML = '<div class="status-msg err">Could not reach the server. Try again.</div>';
@@ -1139,6 +1237,238 @@ function unlockAdmin(){
     .finally(restore);
 }
 
+
+
+// ---------- Admin: collapsible sections ----------
+const SEC_KEY = "lk_admin_sections";
+const SEC_DEFAULT = { dashboard:true, submissions:true, coordinators:false, attendance:false, archive:false };
+let secState = Object.assign({}, SEC_DEFAULT);
+try{ Object.assign(secState, JSON.parse(localStorage.getItem(SEC_KEY) || "{}")); }catch(e){}
+let secHooked = {};
+const secOpenHooks = { archive: ()=>loadBackupInfo() };
+
+function applySections(){
+  document.querySelectorAll(".sec[data-sec]").forEach(el=>{
+    const k = el.dataset.sec, open = !!secState[k];
+    el.classList.toggle("open", open);
+    const b = el.querySelector("[data-toggle-btn]");
+    if(b) b.textContent = open ? "Hide" : "Show";
+    if(open && secOpenHooks[k] && !secHooked[k] && adminUnlocked){ secHooked[k] = true; secOpenHooks[k](); }
+  });
+}
+function setSection(k, open){
+  secState[k] = open;
+  try{ localStorage.setItem(SEC_KEY, JSON.stringify(secState)); }catch(e){}
+  applySections();
+}
+function setAllSections(open){
+  Object.keys(SEC_DEFAULT).forEach(k => { secState[k] = open; });
+  try{ localStorage.setItem(SEC_KEY, JSON.stringify(secState)); }catch(e){}
+  applySections();
+}
+document.querySelectorAll(".sec-head").forEach(h=>{
+  h.addEventListener("click", ev=>{
+    if(ev.target.closest(".sec-tools") && !ev.target.closest("[data-toggle-btn]")) return;
+    const k = h.dataset.toggle;
+    setSection(k, !secState[k]);
+  });
+});
+document.getElementById("sec-collapse-all").addEventListener("click", ()=>setAllSections(false));
+document.getElementById("sec-expand-all").addEventListener("click", ()=>setAllSections(true));
+applySections();
+
+// ---------- Admin: status, dashboard, youth promotion ----------
+function isActive(e){ return (e.Status || "Active") !== "Inactive"; }
+
+async function postAdmin(payload){
+  const res = await fetch(SHEET_ENDPOINT, { method:"POST", body: JSON.stringify(Object.assign({ pass: adminPasscodeValue }, payload)) });
+  const data = await res.json();
+  if(data.status === "error") throw new Error(data.message || "request failed");
+  return data;
+}
+
+function youthCandidates(){
+  return allEntries.filter(e => isActive(e) && e.AssignedClass !== YOUTH_CLASS && (ageInMonths(e.ChildDob) || 0) >= 156);
+}
+
+function renderDashboard(){
+  const tilesEl = document.getElementById("dash-tiles");
+  if(!tilesEl) return;
+  const total = allEntries.length, act = allEntries.filter(isActive).length, off = total - act;
+  const arch = archiveLoaded ? archiveList.length : "–";
+  const tile = (cls, n, label) => `<div class="tile ${cls}"><div class="num">${n}</div><div class="lbl">${label}</div></div>`;
+  tilesEl.innerHTML = tile("", total, "Total children") + tile("t-active", act, "Active") + tile("t-off", off, "Inactive") + tile("t-arch", arch, "Archived");
+
+  const cands = youthCandidates();
+  document.getElementById("dash-note").innerHTML = cands.length
+    ? `<div class="dash-note"><span><b>${cands.length}</b> active ${cands.length === 1 ? "child is" : "children are"} 13 or older and not yet in Youth Network.</span><button type="button" class="act-btn primary" onclick="promoteYouth(this)">Move to Youth Network</button></div>`
+    : "";
+
+  const count = pred => { let a = 0, o = 0; allEntries.forEach(e => { if(pred(e)){ if(isActive(e)) a++; else o++; } }); return { a, o }; };
+  const groups = [
+    { title: "中文 Chinese · Saturday", rows: CLASS_DEFINITIONS.Chinese.map(c => ({ label: c.name, sub: c.ageLabel, c: count(e => e.AssignedClass === c.name) })),
+      extra: { label: "Not yet assigned", c: count(e => e.Service === "Chinese" && !e.AssignedClass) } },
+    { title: "English · Sunday", rows: CLASS_DEFINITIONS.English.map(c => ({ label: c.name, sub: c.ageLabel, c: count(e => e.AssignedClass === c.name) })),
+      extra: { label: "Not yet assigned", c: count(e => e.Service === "English" && !e.AssignedClass) } },
+    { title: "Youth Network · 13 and above", rows: CLASS_DEFINITIONS.Youth.map(c => ({ label: c.name, sub: c.ageLabel, c: count(e => e.AssignedClass === c.name) })) }
+  ];
+  const noSvc = count(e => !e.Service && !e.AssignedClass);
+  if(noSvc.a + noSvc.o > 0) groups.push({ title: "Unassigned", rows: [{ label: "No service or class yet", c: noSvc }] });
+
+  let max = 1;
+  groups.forEach(g => g.rows.concat(g.extra ? [g.extra] : []).forEach(r => { max = Math.max(max, r.c.a + r.c.o); }));
+  const rowHtml = (r, cls) => `<div class="drow ${cls||""}"><span>${escapeHtml(r.label)}${r.sub ? ` <span style="color:var(--ink-soft);font-size:11px;">${escapeHtml(r.sub)}</span>` : ""}</span><span class="n">${r.c.a}</span><span class="n off">${r.c.o}</span><span class="dbar"><i class="a" style="width:${r.c.a / max * 100}%"></i><i class="o" style="width:${r.c.o / max * 100}%"></i></span></div>`;
+  document.getElementById("dash-groups").innerHTML = groups.map(g => {
+    const subtotal = g.rows.concat(g.extra ? [g.extra] : []).reduce((t, r) => ({ a: t.a + r.c.a, o: t.o + r.c.o }), { a: 0, o: 0 });
+    return `<div class="dgroup"><h5>${escapeHtml(g.title)} &mdash; ${subtotal.a} active${subtotal.o ? ", " + subtotal.o + " inactive" : ""}</h5>
+      <div class="drow dhead"><span>Class</span><span class="n">Active</span><span class="n">Inact.</span><span></span></div>
+      ${g.rows.map(r => rowHtml(r)).join("")}${g.extra && (g.extra.c.a + g.extra.c.o) > 0 ? rowHtml(g.extra, "dsub") : ""}</div>`;
+  }).join("");
+}
+
+async function promoteYouth(btn){
+  const cands = youthCandidates();
+  if(!cands.length) return;
+  const names = cands.slice(0, 6).map(e => e.ChildFullName).join(", ") + (cands.length > 6 ? " and " + (cands.length - 6) + " more" : "");
+  if(!confirm("Move " + cands.length + " child(ren) aged 13+ to Youth Network?\n\n" + names + "\n\nTheir service stays the same. You can still change any of them back later.")) return;
+  const restore = setBusy(btn, "Moving...");
+  showToast("Moving to Youth Network...", "busy");
+  try{
+    await postAdmin({ action:"bulkUpdateClass", ids: cands.map(e => e.ID || e.id), newClass: YOUTH_CLASS });
+    cands.forEach(e => { e.AssignedClass = YOUTH_CLASS; });
+    renderTable();
+    showToast(cands.length + " moved to Youth Network", "ok");
+  }catch(err){
+    restore();
+    showToast("Could not move: " + (err.message || err), "err");
+  }
+}
+
+async function toggleStatus(id, btn){
+  const entry = allEntries.find(e => (e.ID || e.id) === id);
+  if(!entry || btn.disabled) return;
+  const next = isActive(entry) ? "Inactive" : "Active";
+  btn.disabled = true;
+  showToast("Updating status...", "busy");
+  try{
+    await postAdmin({ action:"updateEntry", id: id, fields: { Status: next } });
+    entry.Status = next;
+    renderTable();
+    showToast((entry.ChildFullName || "Child") + " marked " + next, "ok");
+  }catch(err){
+    btn.disabled = false;
+    showToast("Could not update status: " + (err.message || err), "err");
+  }
+}
+
+// ---------- Admin: archive ----------
+let archiveList = [], archiveLoaded = false;
+
+async function loadArchive(){
+  const list = document.getElementById("archive-list");
+  try{
+    const res = await fetch(SHEET_ENDPOINT + "?action=getArchive&pass=" + encodeURIComponent(adminPasscodeValue));
+    const data = await res.json();
+    if(data.status === "error") throw new Error(data.message || "unauthorized");
+    archiveList = data.entries || [];
+    archiveLoaded = true;
+    renderArchive();
+    renderDashboard();
+  }catch(e){
+    list.innerHTML = '<p class="empty-note">Could not load archive: ' + escapeHtml(e.message || String(e)) + '<br>(If you just updated the app, redeploy the Apps Script as a New version.)</p>';
+  }
+}
+
+function renderArchive(){
+  const list = document.getElementById("archive-list");
+  document.getElementById("arch-count").textContent = archiveList.length + " archived";
+  if(archiveList.length === 0){
+    list.innerHTML = '<p class="empty-note">Nothing archived yet. Use "Archive" on a child, or "Archive all Inactive".</p>';
+    return;
+  }
+  list.innerHTML = '<div class="cm-list">' + archiveList.map((e, i) => `
+    <div class="arch-row">
+      <span><b>${escapeHtml(e.ChildFullName || "")}</b> <span style="color:var(--ink-soft)">${escapeHtml(e.ID || "")} &middot; ${escapeHtml(e.AssignedClass || e.Service || "no class")} &middot; archived ${escapeHtml(e.ArchivedOn || "")}</span></span>
+      <span class="cm-actions">
+        <button type="button" class="act-btn ghost" onclick="previewChildPdf(archiveList[${i}], this)">${ICON_EYE} View PDF</button>
+        <button type="button" class="act-btn" onclick="restoreOne('${escapeHtml(e.ID || "")}', this)">Restore</button>
+      </span>
+    </div>`).join("") + '</div>';
+}
+
+async function archiveIds(ids, label, btn){
+  const restore = setBusy(btn, "Archiving...");
+  showToast("Archiving...", "busy");
+  try{
+    const data = await postAdmin({ action:"archiveEntries", ids: ids });
+    allEntries = allEntries.filter(e => ids.indexOf(e.ID || e.id) === -1);
+    editingRowId = null;
+    renderTable();
+    await loadArchive();
+    showToast((data.moved || ids.length) + " archived", "ok");
+  }catch(err){
+    restore();
+    showToast("Could not archive: " + (err.message || err), "err");
+  }
+}
+function archiveOne(id, btn){
+  const e = allEntries.find(x => (x.ID || x.id) === id);
+  if(!id || !e) return;
+  if(!confirm("Archive " + (e.ChildFullName || id) + "?\n\nThey will be removed from the active list, attendance sheets and coordinator views. You can restore them any time from Archive & Backup.")) return;
+  archiveIds([id], "child", btn);
+}
+function archiveInactive(btn){
+  const ids = allEntries.filter(e => !isActive(e)).map(e => e.ID || e.id).filter(Boolean);
+  if(!ids.length){ showToast("No inactive children to archive", ""); return; }
+  if(!confirm("Archive all " + ids.length + " inactive child(ren)?\n\nYou can restore any of them later.")) return;
+  archiveIds(ids, "inactive", btn);
+}
+async function restoreOne(id, btn){
+  if(!id) return;
+  const restore = setBusy(btn, "Restoring...");
+  showToast("Restoring...", "busy");
+  try{
+    await postAdmin({ action:"restoreEntries", ids: [id] });
+    await Promise.all([loadEntries(), loadArchive()]);
+    showToast("Restored as Active", "ok");
+  }catch(err){
+    restore();
+    showToast("Could not restore: " + (err.message || err), "err");
+  }
+}
+document.getElementById("archive-inactive-btn").addEventListener("click", e => archiveInactive(e.currentTarget));
+
+// ---------- Admin: backup ----------
+async function loadBackupInfo(){
+  const el = document.getElementById("bk-status");
+  el.textContent = "Checking backups...";
+  try{
+    const res = await fetch(SHEET_ENDPOINT + "?action=getBackupInfo&pass=" + encodeURIComponent(adminPasscodeValue));
+    const d = await res.json();
+    if(d.status === "error") throw new Error(d.message || "unauthorized");
+    const sched = d.scheduled
+      ? '<b style="color:#2C6B4F">ON</b> (every Sunday, 2am)'
+      : '<b style="color:var(--danger)">NOT SET UP</b> - open the Apps Script editor, select <code>setupWeeklyBackup</code> and click Run once';
+    el.innerHTML = 'Weekly auto-backup: ' + sched + '<br>Last backup: <b>' + escapeHtml(d.latest || "none yet") + '</b> &middot; <b>' + (d.count || 0) + '</b> kept (about ' + Math.round((d.keepDays || 90) / 30) + ' months, older copies are deleted automatically)' +
+      (d.folderUrl ? ' &middot; <a href="' + escapeHtml(d.folderUrl) + '" target="_blank" rel="noopener" style="color:var(--coral-dark);font-weight:700;">Open backup folder</a>' : '') +
+      (d.error ? '<br><span style="color:var(--danger)">' + escapeHtml(d.error) + '</span>' : '');
+  }catch(e){
+    el.innerHTML = '<span style="color:var(--danger)">Could not read backup status: ' + escapeHtml(e.message || String(e)) + '</span> (redeploy the Apps Script as a New version if you just updated it)';
+  }
+}
+document.getElementById("bk-refresh-btn").addEventListener("click", loadBackupInfo);
+document.getElementById("bk-now-btn").addEventListener("click", async e => {
+  const btn = e.currentTarget;
+  const restore = setBusy(btn, "Backing up...");
+  showToast("Backing up... this can take a few seconds", "busy");
+  try{
+    const d = await postAdmin({ action:"backupNow" });
+    showToast("Backup saved: " + (d.name || ""), "ok");
+    await loadBackupInfo();
+  }catch(err){
+    showToast("Backup failed: " + (err.message || err), "err");
+  }finally{ restore(); }
+});
 
 // ---------- Admin: coordinator access manager ----------
 let coordList = [];
@@ -1201,6 +1531,7 @@ function openCoordForm(i){
       <label class="lbl">Classes they can access</label>
       ${group("Chinese · Saturday", CLASS_DEFINITIONS.Chinese)}
       ${group("English · Sunday", CLASS_DEFINITIONS.English)}
+      ${group("Youth · 13 and above", CLASS_DEFINITIONS.Youth)}
       <div class="cm-form-actions">
         <button type="button" class="act-btn primary" id="cm-save-btn" onclick="saveCoordForm(this)">${ICON_CHECK} Save</button>
         <button type="button" class="act-btn ghost" onclick="closeCoordForm()">${ICON_X} Cancel</button>
@@ -1264,6 +1595,7 @@ document.getElementById("admin-logout").addEventListener("click", ()=>{
   adminPasscodeValue = "";
   allEntries = [];
   coordList = [];
+  archiveList = []; archiveLoaded = false; secHooked = {};
   closeCoordForm();
   document.getElementById("admin-pass").value = "";
   document.getElementById("admin-gate-status").innerHTML = "";
@@ -1369,11 +1701,11 @@ function renderCoordinatorHeader(){
 }
 function isChineseClass(name){ return CLASS_DEFINITIONS.Chinese.some(c => c.name === name); }
 function classChipGroups(classes){
-  const zh = classes.filter(isChineseClass), en = classes.filter(c => !isChineseClass(c));
+  const zh = classes.filter(isChineseClass), yn = classes.filter(c => c === YOUTH_CLASS), en = classes.filter(c => !isChineseClass(c) && c !== YOUTH_CLASS);
   const row = (label, list, cls) => list.length
     ? '<div class="chip-row"><span class="chip-label">' + label + '</span>' + list.map(c => '<span class="cls-chip ' + cls + '">' + escapeHtml(c) + '</span>').join("") + '</div>'
     : "";
-  return row("Chinese · Sat", zh, "zh") + row("English · Sun", en, "en") || '<div class="coord-sub">No classes assigned</div>';
+  return row("Chinese · Sat", zh, "zh") + row("English · Sun", en, "en") + row("Youth · 13+", yn, "yn") || '<div class="coord-sub">No classes assigned</div>';
 }
 
 document.getElementById("coordinator-logout").addEventListener("click", ()=>{
@@ -1413,7 +1745,7 @@ function renderCoordinatorTable(){
     wrap.innerHTML = '<p class="empty-note">No students assigned to your class(es) yet.</p>';
     return;
   }
-  const allClasses = CLASS_DEFINITIONS.Chinese.concat(CLASS_DEFINITIONS.English);
+  const allClasses = allClassDefs();
   let html = '<table><thead><tr><th>Child Name</th><th>DOB</th><th>Age</th><th>Service</th><th>Class</th><th>Parent(s)</th><th>Allergy/Condition</th><th>Photo OK?</th><th></th></tr></thead><tbody>';
   coordinatorEntries.forEach((e,idx)=>{
     const id = e.ID || e.id || "";
@@ -1448,7 +1780,7 @@ function renderCoordinatorTable(){
       </tr>`;
     } else {
       html += `<tr>
-        <td>${escapeHtml(e.ChildFullName||"")}<br><span style="color:var(--ink-soft)">${escapeHtml(e.ChildNickname||"")}</span></td>
+        <td>${escapeHtml(e.ChildFullName||"")}${isActive(e)?"":' <span class="pill off">Inactive</span>'}<br><span style="color:var(--ink-soft)">${escapeHtml(e.ChildNickname||"")}</span></td>
         <td>${escapeHtml(e.ChildDob||"")}</td>
         <td>${escapeHtml(e.ChildAge||"")}</td>
         <td>${escapeHtml(e.Service||"")}</td>
@@ -1654,7 +1986,7 @@ function attendanceLabel(congregation, key){
 function exportAttendanceTemplate(congregation, className, fromMonth, toMonth, year, sourceEntries){
   const dayType = dayTypeForClass(congregation, className);
   const dates = datesForDayTypeRange(year, fromMonth, toMonth, dayType);
-  const students = sourceEntries.filter(e => (e.AssignedClass||"") === className);
+  const students = sourceEntries.filter(e => (e.AssignedClass||"") === className && (e.Status||"Active") !== "Inactive");
   const rows = [
     ["LitKids Attendance Sheet"],
     ["Service:", congregation],
@@ -1743,7 +2075,7 @@ function buildAttendancePrintView(congregation, className, fromMonth, toMonth, y
 
   const dayType = dayTypeForClass(congregation, className);
   const dates = datesForDayTypeRange(year, fromMonth, toMonth, dayType);
-  const students = sourceEntries.filter(e => (e.AssignedClass||"") === className);
+  const students = sourceEntries.filter(e => (e.AssignedClass||"") === className && (e.Status||"Active") !== "Inactive");
   const noLabel = attendanceLabel(congregation, "no");
   const nameLabel = attendanceLabel(congregation, "name");
 
@@ -1807,6 +2139,7 @@ function getFilteredSortedEntries(){
   const congFilter = document.getElementById("filter-congregation").value;
   const classFilter = document.getElementById("filter-class").value;
   const photoFilter = document.getElementById("filter-photo").value;
+  const statusFilter = document.getElementById("filter-status").value;
   const sortBy = document.getElementById("sort-by").value;
 
   let list = allEntries.filter(e=>{
@@ -1824,6 +2157,7 @@ function getFilteredSortedEntries(){
     if(congFilter && (e.Service||"") !== congFilter) return false;
     if(classFilter && (e.AssignedClass||"") !== classFilter) return false;
     if(photoFilter && (e.PhotoPermission||"") !== photoFilter) return false;
+    if(statusFilter && (isActive(e) ? "Active" : "Inactive") !== statusFilter) return false;
     return true;
   });
 
@@ -1846,6 +2180,9 @@ let editingRowId = null;
 
 function renderTable(){
   const wrap = document.getElementById("log-table-wrap");
+  renderDashboard();
+  const subCount = document.getElementById("sub-count");
+  if(subCount) subCount.textContent = allEntries.length + (allEntries.length === 1 ? " child" : " children");
   if(allEntries.length===0){
     wrap.innerHTML = '<p class="empty-note">No submissions yet.</p>';
     return;
@@ -1855,7 +2192,7 @@ function renderTable(){
     wrap.innerHTML = '<p class="empty-note">No submissions match these filters.</p>';
     return;
   }
-  let html = '<table><thead><tr><th>Child Name</th><th>DOB</th><th>Age</th><th>Service</th><th>Class</th><th>Parent(s)</th><th>Allergy/Condition</th><th>Photo OK?</th><th>Submitted</th><th></th></tr></thead><tbody>';
+  let html = '<table><thead><tr><th>Child Name</th><th>DOB</th><th>Age</th><th>Service</th><th>Class</th><th>Status</th><th>Parent(s)</th><th>Allergy/Condition</th><th>Photo OK?</th><th>Submitted</th><th></th></tr></thead><tbody>';
   currentFiltered.forEach((e,idx)=>{
     const id = e.ID || e.id || "";
     const congregation = e.Service || "";
@@ -1890,6 +2227,7 @@ function renderTable(){
         <td>${fld("edit-age",e.ChildAge)}</td>
         <td>${congSelect}</td>
         <td>${classSelectHtml}</td>
+        <td><select id="edit-status-${id}" style="font-size:12px;padding:3px;"><option value="Active" ${isActive(e)?"selected":""}>Active</option><option value="Inactive" ${!isActive(e)?"selected":""}>Inactive</option></select></td>
         <td>${fld("edit-father",e.FatherName)}${fld("edit-mother",e.MotherName)}</td>
         <td>${yesNoSelect("edit-allergy",e.Allergy)}${fld("edit-allergy-detail",e.AllergyDetail)}${yesNoSelect("edit-condition",e.Condition)}${fld("edit-condition-detail",e.ConditionDetail)}</td>
         <td>${yesNoSelect("edit-photo",e.PhotoPermission)}</td>
@@ -1908,6 +2246,7 @@ function renderTable(){
         <td>${escapeHtml(e.ChildAge||"")}</td>
         <td>${escapeHtml(congregation)}</td>
         <td>${classSelectHtml}</td>
+        <td><button type="button" class="pill ${isActive(e)?"on":"off"}" title="Click to mark ${isActive(e)?"Inactive":"Active"}" onclick="toggleStatus('${id}', this)">${isActive(e)?"Active":"Inactive"}</button></td>
         <td>${escapeHtml(e.FatherName||"")}<br>${escapeHtml(e.MotherName||"")}</td>
         <td>${escapeHtml(e.Allergy||"")}${e.AllergyDetail?": "+escapeHtml(e.AllergyDetail):""}<br>${escapeHtml(e.Condition||"")}${e.ConditionDetail?": "+escapeHtml(e.ConditionDetail):""}</td>
         <td>${escapeHtml(e.PhotoPermission||"")}</td>
@@ -1916,6 +2255,7 @@ function renderTable(){
           <div class="act-stack">
             <button type="button" class="act-btn" onclick="editingRowId='${id}'; renderTable();">${ICON_EDIT} Edit</button>
             <button type="button" class="act-btn ghost" onclick="previewChildPdf(currentFiltered[${idx}], this)">${ICON_EYE} View PDF</button>
+            <button type="button" class="act-btn ghost" onclick="archiveOne('${id}', this)">${ICON_ARCHIVE} Archive</button>
           </div>
         </td>
       </tr>`;
@@ -1944,7 +2284,8 @@ async function saveEntryEdits(id, btn){
     AllergyDetail: v("edit-allergy-detail"),
     Condition: v("edit-condition"),
     ConditionDetail: v("edit-condition-detail"),
-    PhotoPermission: v("edit-photo")
+    PhotoPermission: v("edit-photo"),
+    Status: v("edit-status")
   };
   try{
     const res = await fetch(SHEET_ENDPOINT, {
@@ -1993,6 +2334,7 @@ document.getElementById("filter-age-max").addEventListener("input", renderTable)
 document.getElementById("filter-congregation").addEventListener("change", renderTable);
 document.getElementById("filter-class").addEventListener("change", renderTable);
 document.getElementById("filter-photo").addEventListener("change", renderTable);
+document.getElementById("filter-status").addEventListener("change", renderTable);
 document.getElementById("sort-by").addEventListener("change", renderTable);
 document.getElementById("clear-filters").addEventListener("click", ()=>{
   document.getElementById("filter-name").value = "";
@@ -2001,6 +2343,7 @@ document.getElementById("clear-filters").addEventListener("click", ()=>{
   document.getElementById("filter-congregation").value = "";
   document.getElementById("filter-class").value = "";
   document.getElementById("filter-photo").value = "";
+  document.getElementById("filter-status").value = "";
   document.getElementById("sort-by").value = "name-asc";
   renderTable();
 });
@@ -2008,7 +2351,7 @@ document.getElementById("clear-filters").addEventListener("click", ()=>{
 // populate the class filter dropdown once with every class across both congregations
 (function populateClassFilter(){
   const sel = document.getElementById("filter-class");
-  const allClasses = CLASS_DEFINITIONS.Chinese.concat(CLASS_DEFINITIONS.English);
+  const allClasses = allClassDefs();
   const seen = new Set();
   allClasses.forEach(c=>{
     if(seen.has(c.name)) return;
