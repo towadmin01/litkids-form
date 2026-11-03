@@ -212,6 +212,11 @@
   .act-stack{display:grid;grid-template-columns:repeat(2,34px);gap:6px;min-width:0;}
   .act-stack .act-btn{width:34px;height:34px;padding:0;}
   .act-stack .lbl{display:none;}
+  .nick{display:inline-block;margin-top:4px;padding:1px 9px;border-radius:999px;background:#FFF1D6;border:1px solid #F0D49A;color:#8A5A00;font-size:11px;font-weight:700;line-height:1.5;}
+  .nick::before{content:"aka ";font-weight:600;opacity:.75;}
+  .also{margin-top:6px;}
+  .also label{display:block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);margin-bottom:2px;}
+  .also select{font-size:12px;height:32px !important;padding:0 6px !important;}
   /* phones: each child becomes a card instead of a wide table */
   @media (max-width:760px){
     #log-table-wrap, #coordinator-table-wrap{border:none;background:none;overflow:visible;}
@@ -1126,6 +1131,8 @@ const CLASS_DEFINITIONS = {
   ]
 };
 const YOUTH_CLASS = "Youth Network";
+function inClass(e, name){ return !!name && (e.AssignedClass === name || e.SecondClass === name); }
+function otherServiceOf(e){ const sv = e.Service === "Chinese" ? "English" : e.Service === "English" ? "Chinese" : ""; return sv; }
 function allClassDefs(){ return CLASS_DEFINITIONS.Chinese.concat(CLASS_DEFINITIONS.English, CLASS_DEFINITIONS.Youth); }
 
 function ageLabelFor(className){
@@ -1418,11 +1425,14 @@ function parentOverlap(a, b){
 }
 function sameDob(a, b){ const x = String(a.ChildDob || "").trim(); return !!x && x === String(b.ChildDob || "").trim(); }
 function sameAge(a, b){ const x = String(a.ChildAge || "").trim(); return !!x && x === String(b.ChildAge || "").trim(); }
+function notDupIds(e){ return String(e.NotDupOf || "").split(/[,;\s]+/).filter(Boolean); }
+function confirmedDifferent(a, b){ return notDupIds(a).indexOf(String(b.ID || b.id)) !== -1 || notDupIds(b).indexOf(String(a.ID || a.id)) !== -1; }
 function sameChild(a, b){
+  if(confirmedDifferent(a, b)) return false;
   const nameExact = normName(a.ChildFullName) && normName(a.ChildFullName) === normName(b.ChildFullName);
   const nameClose = nameExact || nameLike(a.ChildFullName, b.ChildFullName) || nameLike(a.ChildNickname, b.ChildFullName) || nameLike(a.ChildFullName, b.ChildNickname);
   const par = parentOverlap(a, b), dob = sameDob(a, b);
-  return nameExact || (nameClose && (dob || par || sameAge(a, b))) || (dob && par);
+  return nameExact || (nameClose && (dob || par || sameAge(a, b)));
 }
 function dupGroups(){
   const list = allEntries.slice(), parent = list.map((_, i) => i);
@@ -1457,6 +1467,31 @@ function pickKeep(g){
 function mergeSummary(g){
   const keep = pickKeep(g), drops = g.filter(e => e !== keep);
   return { keep: keep, drops: drops, text: (keep.ChildFullName || "") + ": keep " + (keep.ID || "?") + (keep.AssignedClass ? " (" + keep.AssignedClass + ")" : " (no class)") + ", merge in " + drops.map(e => e.ID || "?").join(", ") };
+}
+async function markNotDuplicate(id, btn){
+  const e = allEntries.find(x => (x.ID || x.id) === id);
+  if(!e) return;
+  const g = dupGroups().find(grp => grp.indexOf(e) !== -1);
+  if(!g){ showToast("Nothing to confirm for this child", ""); return; }
+  const names = g.map(x => (x.ChildFullName || "?") + " (" + (x.ID || "?") + ")").join("\n\u2022 ");
+  if(!confirm("Confirm these are DIFFERENT children (for example siblings or twins)?\n\n\u2022 " + names + "\n\nThey will not be flagged as possible duplicates again, and will not be offered for merging.")) return;
+  const restore = setBusy(btn, "Saving...");
+  showToast("Saving...", "busy");
+  try{
+    await Promise.all(g.map(x => {
+      const mine = String(x.ID || x.id);
+      const ids = Array.from(new Set(notDupIds(x).concat(g.filter(y => y !== x).map(y => String(y.ID || y.id)))));
+      const value = ids.join(",");
+      x.NotDupOf = value;
+      return postAdmin({ action:"updateEntry", id: mine, fields: { NotDupOf: value }, editedBy: "Admin (not a duplicate)" });
+    }));
+    renderTable();
+    showToast("Marked as different children - won't be flagged again", "ok");
+  }catch(err){
+    restore();
+    showToast("Could not save: " + (err.message || err) + " (redeploy the Apps Script as a New version if you just updated it)", "err");
+    await loadEntries();
+  }
 }
 async function runMerge(g){
   const m = mergeSummary(g);
@@ -1538,7 +1573,7 @@ function countBy(list, pred){
 function buildGroups(list, allowedNames, withUnassigned){
   const ok = n => !allowedNames || allowedNames.indexOf(n) !== -1;
   const mk = (key, defs, svc) => {
-    const rows = defs.filter(c => ok(c.name)).map(c => { const pred = e => e.AssignedClass === c.name; return { label: c.name, sub: c.ageLabel, pred: pred, isClass: true, c: countBy(list, pred) }; });
+    const rows = defs.filter(c => ok(c.name)).map(c => { const pred = e => inClass(e, c.name); return { label: c.name, sub: c.ageLabel, pred: pred, isClass: true, c: countBy(list, pred) }; });
     if(!rows.length) return null;
     const extra = (withUnassigned && svc) ? (() => { const pred = e => e.Service === svc && !e.AssignedClass; return { label: "Not yet assigned", pred: pred, isClass: false, c: countBy(list, pred) }; })() : null;
     const all = rows.concat(extra ? [extra] : []);
@@ -1561,7 +1596,7 @@ function studentListHtml(r, list, scope){
   const kids = list.filter(r.pred).sort((a, b) => (a.ChildFullName || "").localeCompare(b.ChildFullName || ""));
   const rowsHtml = kids.map((e, i) => `<div class="stu${isActive(e) ? "" : " off"}"><span class="no">${i + 1}</span>
       <span class="nm">${escapeHtml(e.ChildFullName || "")}${dupPill(e)}${e.ChildNickname ? ` <span style="color:var(--ink-soft)">(${escapeHtml(e.ChildNickname)})</span>` : ""}</span>
-      <span class="ag">${e.ChildAge ? "Age " + escapeHtml(String(e.ChildAge)) : ""}</span>
+      <span class="ag">${e.ChildAge ? "Age " + escapeHtml(String(e.ChildAge)) : ""}${e.SecondClass ? ' <span class="pill warn" title="Attends both services: ' + escapeHtml((e.AssignedClass||"") + ' + ' + e.SecondClass) + '">Both services</span>' : ""}</span>
       <span class="pill ${isActive(e) ? "on" : "off"}">${isActive(e) ? "Active" : "Inactive"}</span></div>`).join("");
   const go = (scope === "admin" && r.isClass)
     ? `<div class="go"><button type="button" class="act-btn" onclick="showClassInTable(${JSON.stringify(r.label).replace(/"/g, "&quot;")})">Show in main list</button></div>`
@@ -2154,7 +2189,12 @@ function renderCoordinatorTable(){
       // Show every class from both services here, not just the child's own service -
       // a coordinator may need to move a child across services, and this dropdown
       // should never come up empty regardless of what's on file for this child.
-      const classSelect = `<select id="edit-coord-class-${id}" style="font-size:12px;padding:3px;">
+      const viaSecond = !!e.AssignedClass && coordinatorClasses.indexOf(e.AssignedClass) === -1 && coordinatorClasses.indexOf(e.SecondClass) !== -1;
+      // Second-service coordinator: edits the child's class in THEIR service (the main class stays with the other coordinator)
+      const classSelect = viaSecond ? `<select id="edit-coord-class-${id}" style="font-size:12px;padding:3px;" title="Main class: ${escapeHtml(e.AssignedClass)}">
+        <option value="">None (stop attending this service)</option>
+        ${classListFor(CLASS_DEFINITIONS.Chinese.some(c => c.name === e.SecondClass) ? "Chinese" : "English").map(c => `<option value="${escapeHtml(c.name)}" ${e.SecondClass===c.name?"selected":""}>${escapeHtml(classDisplayLabel(c))}</option>`).join("")}
+      </select><div style="font-size:10.5px;color:var(--ink-soft);margin-top:3px;">Main class: ${escapeHtml(e.AssignedClass)}</div>` : `<select id="edit-coord-class-${id}" style="font-size:12px;padding:3px;">
         ${e.AssignedClass ? "" : '<option value="" selected>-- Select class --</option>'}
         ${allClasses.map(c => `<option value="${escapeHtml(c.name)}" ${e.AssignedClass===c.name?"selected":""}>${escapeHtml(classDisplayLabel(c))}${!e.AssignedClass && suggestClass(e.Service, e.ChildDob) === c.name ? " (suggested)" : ""}</option>`).join("")}
       </select>`;
@@ -2174,10 +2214,10 @@ function renderCoordinatorTable(){
       </tr>`;
     } else {
       html += `<tr data-id="${escapeHtml(id)}">
-        <td>${escapeHtml(e.ChildFullName||"")}${isActive(e)?"":' <span class="pill off">Inactive</span>'}<br><span style="color:var(--ink-soft)">${escapeHtml(e.ChildNickname||"")}</span></td>
+        <td>${escapeHtml(e.ChildFullName||"")}${isActive(e)?"":' <span class="pill off">Inactive</span>'}${e.ChildNickname ? `<br><span class="nick">${escapeHtml(e.ChildNickname)}</span>` : ""}</td>
         <td>${escapeHtml(e.ChildDob||"")}<br><span style="color:var(--ink-soft)">${e.ChildAge ? escapeHtml(e.ChildAge) + " yrs" : ""}</span></td>
         <td>${escapeHtml(e.Service||"")}</td>
-        <td>${e.AssignedClass ? escapeHtml(e.AssignedClass) : '<span class="pill warn">Not assigned</span>'}</td>
+        <td>${e.AssignedClass ? escapeHtml(e.AssignedClass) : '<span class="pill warn">Not assigned</span>'}${e.SecondClass ? `<br><span style="color:var(--ink-soft)">+ ${escapeHtml(e.SecondClass)}</span>` : ""}</td>
         <td>${escapeHtml(e.FatherName||"")}<br>${escapeHtml(e.MotherName||"")}</td>
         <td>${escapeHtml(e.Allergy||"")}${e.AllergyDetail?": "+escapeHtml(e.AllergyDetail):""}<br>${escapeHtml(e.Condition||"")}${e.ConditionDetail?": "+escapeHtml(e.ConditionDetail):""}<br><span style="color:var(--ink-soft)">Photo OK: ${escapeHtml(e.PhotoPermission||"-")}</span></td>
         <td>
@@ -2381,7 +2421,7 @@ function attendanceLabel(congregation, key){
 function exportAttendanceTemplate(congregation, className, fromMonth, toMonth, year, sourceEntries){
   const dayType = dayTypeForClass(congregation, className);
   const dates = datesForDayTypeRange(year, fromMonth, toMonth, dayType);
-  const students = sourceEntries.filter(e => (e.AssignedClass||"") === className && (e.Status||"Active") !== "Inactive").slice().sort(byChildName);
+  const students = sourceEntries.filter(e => inClass(e, className) && (e.Status||"Active") !== "Inactive").slice().sort(byChildName);
   const rows = [
     ["LitKids Attendance Sheet"],
     ["Service:", congregation],
@@ -2470,7 +2510,7 @@ function buildAttendancePrintView(congregation, className, fromMonth, toMonth, y
 
   const dayType = dayTypeForClass(congregation, className);
   const dates = datesForDayTypeRange(year, fromMonth, toMonth, dayType);
-  const students = sourceEntries.filter(e => (e.AssignedClass||"") === className && (e.Status||"Active") !== "Inactive").slice().sort(byChildName);
+  const students = sourceEntries.filter(e => inClass(e, className) && (e.Status||"Active") !== "Inactive").slice().sort(byChildName);
   const noLabel = attendanceLabel(congregation, "no");
   const nameLabel = attendanceLabel(congregation, "name");
 
@@ -2550,7 +2590,7 @@ function getFilteredSortedEntries(){
       if(isNaN(age) || age > parseFloat(ageMax)) return false;
     }
     if(congFilter && (e.Service||"") !== congFilter) return false;
-    if(classFilter && (e.AssignedClass||"") !== classFilter) return false;
+    if(classFilter && !inClass(e, classFilter)) return false;
     if(photoFilter && (e.PhotoPermission||"") !== photoFilter) return false;
     if(statusFilter && (isActive(e) ? "Active" : "Inactive") !== statusFilter) return false;
     if(dupOnly && !dupMap[e.ID || e.id || "(no id)"]) return false;
@@ -2606,6 +2646,14 @@ function renderTable(){
       </select>`;
     }
 
+    const otherSvc = otherServiceOf(e);
+    if(otherSvc && currentClass){
+      classSelectHtml += `<div class="also"><label>Also attends ${otherSvc}</label><select onchange="assignSecondClass('${id}', this.value, this)">
+        <option value="">None</option>
+        ${classListFor(otherSvc).map(c => `<option value="${escapeHtml(c.name)}" ${e.SecondClass===c.name?"selected":""}>${escapeHtml(classDisplayLabel(c))}</option>`).join("")}
+      </select></div>`;
+    }
+
     if(editingRowId === id){
       const fld = (fieldId, val) => `<input type="text" id="${fieldId}-${id}" value="${escapeHtml(val||"")}" style="width:100%;font-size:12px;padding:3px 5px;margin-bottom:3px;">`;
       const yesNoSelect = (fieldId, val) => `<select id="${fieldId}-${id}" style="font-size:12px;padding:3px;">
@@ -2636,7 +2684,7 @@ function renderTable(){
       </tr>`;
     } else {
       html += `<tr data-id="${escapeHtml(id)}">
-        <td>${escapeHtml(e.ChildFullName||"")}${dupPill(e)}<br><span style="color:var(--ink-soft)">${escapeHtml(e.ChildNickname||"")}</span></td>
+        <td>${escapeHtml(e.ChildFullName||"")}${dupPill(e)}${e.ChildNickname ? `<br><span class="nick">${escapeHtml(e.ChildNickname)}</span>` : ""}</td>
         <td>${escapeHtml(e.ChildDob||"")}<br><span style="color:var(--ink-soft)">${e.ChildAge ? escapeHtml(e.ChildAge) + " yrs" : ""}</span></td>
         <td>${escapeHtml(congregation)}</td>
         <td>${classSelectHtml}</td>
@@ -2648,7 +2696,7 @@ function renderTable(){
           <div class="act-stack">
             <button type="button" class="act-btn" onclick="editingRowId='${id}'; renderTable();" title="Edit" aria-label="Edit">${ICON_EDIT} <span class="lbl">Edit</span></button>
             <button type="button" class="act-btn ghost" onclick="previewChildPdf(currentFiltered[${idx}], this)" title="View PDF" aria-label="View PDF">${ICON_EYE} <span class="lbl">View PDF</span></button>
-            ${dupMap[id || "(no id)"] ? `<button type="button" class="act-btn" onclick="mergeFromRow('${id}', this)" title="Merge" aria-label="Merge">${ICON_MERGE} <span class="lbl">Merge</span></button>` : ""}
+            ${dupMap[id || "(no id)"] ? `<button type="button" class="act-btn" onclick="mergeFromRow('${id}', this)" title="Merge" aria-label="Merge">${ICON_MERGE} <span class="lbl">Merge</span></button><button type="button" class="act-btn ghost" onclick="markNotDuplicate('${id}', this)" title="Not a duplicate (siblings / twins)" aria-label="Not a duplicate">${ICON_CHECK} <span class="lbl">Not a duplicate</span></button>` : ""}
             <button type="button" class="act-btn ghost" onclick="archiveOne('${id}', this)" title="Archive" aria-label="Archive">${ICON_ARCHIVE} <span class="lbl">Archive</span></button>
           </div>
         </td>
@@ -2701,6 +2749,20 @@ async function saveEntryEdits(id, btn){
   }
 }
 
+async function assignSecondClass(id, newClass, selectEl){
+  selectEl.disabled = true;
+  showToast("Saving second service class...", "busy");
+  try{
+    await postAdmin({ action:"updateEntry", id: id, fields: { SecondClass: newClass }, editedBy: "Admin (second service)" });
+    const entry = allEntries.find(e => (e.ID||e.id) === id);
+    if(entry) entry.SecondClass = newClass;
+    renderTable();
+    showToast(newClass ? "Now attends both services" : "Second service removed", "ok");
+  }catch(err){
+    selectEl.disabled = false;
+    showToast("Could not save: " + (err.message||err) + " (redeploy the Apps Script as a New version if you just updated it)", "err");
+  }
+}
 async function assignClass(id, newClass, selectEl){
   if(!id){ alert("This entry has no ID - cannot update its class."); return; }
   selectEl.disabled = true;
@@ -2714,6 +2776,7 @@ async function assignClass(id, newClass, selectEl){
     if(data.status === "error") throw new Error(data.message || "update failed");
     const entry = allEntries.find(e => (e.id||e.ID) === id);
     if(entry) entry.AssignedClass = newClass;
+    renderTable();
     showToast("Class updated", "ok");
   }catch(err){
     showToast("Could not save class assignment: " + (err.message||err), "err");
