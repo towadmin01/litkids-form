@@ -5,6 +5,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Alatsi&family=Poppins:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Child Information Form - LitKids</title>
 <style>
   :root{
@@ -203,13 +204,30 @@
   #log-table-wrap th:last-child, #coordinator-table-wrap th:last-child{border-top-right-radius:9px;}
   #log-table-wrap tbody tr:nth-child(even), #coordinator-table-wrap tbody tr:nth-child(even){background:#FCF9F5;}
   #log-table-wrap tbody tr:hover, #coordinator-table-wrap tbody tr:hover{background:#FFF3EA;}
-  #log-table-wrap td, #coordinator-table-wrap td{padding:10px 8px;vertical-align:middle;}
-  #log-table-wrap table, #coordinator-table-wrap table{min-width:1040px;}
-  #log-table-wrap td:nth-child(2), #log-table-wrap td:nth-child(3){white-space:nowrap;}
-  #log-table-wrap td select, #coordinator-table-wrap td select{min-width:128px;max-width:190px;height:32px;}
-  #log-table-wrap td:nth-last-child(2){white-space:nowrap;font-size:12px;}
-  #log-table-wrap td:last-child, #coordinator-table-wrap td:last-child{width:118px;}
-  .act-stack .act-btn{width:100%;}
+  #log-table-wrap td, #coordinator-table-wrap td{padding:10px 6px;vertical-align:middle;font-size:12.5px;}
+  #log-table-wrap table, #coordinator-table-wrap table{width:100%;min-width:0;}
+  #log-table-wrap th, #coordinator-table-wrap th{padding:10px 6px;font-size:10.5px;}
+  #log-table-wrap td:nth-child(2){white-space:nowrap;}
+  #log-table-wrap td select, #coordinator-table-wrap td select{width:100%;min-width:96px;max-width:140px;height:32px;text-overflow:ellipsis;}
+  .act-stack{display:grid;grid-template-columns:repeat(2,34px);gap:6px;min-width:0;}
+  .act-stack .act-btn{width:34px;height:34px;padding:0;}
+  .act-stack .lbl{display:none;}
+  /* phones: each child becomes a card instead of a wide table */
+  @media (max-width:760px){
+    #log-table-wrap, #coordinator-table-wrap{border:none;background:none;overflow:visible;}
+    #log-table-wrap table, #coordinator-table-wrap table, #log-table-wrap tbody, #coordinator-table-wrap tbody{display:block;}
+    #log-table-wrap thead, #coordinator-table-wrap thead{display:none;}
+    #log-table-wrap tbody tr, #coordinator-table-wrap tbody tr{display:block;background:#fff !important;border:1px solid var(--line);border-radius:12px;padding:8px 12px;margin-bottom:12px;}
+    #log-table-wrap td, #coordinator-table-wrap td{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed var(--line);text-align:right;}
+    #log-table-wrap td:last-child, #coordinator-table-wrap td:last-child{border-bottom:none;width:auto;justify-content:flex-end;}
+    #log-table-wrap td::before, #coordinator-table-wrap td::before{content:attr(data-label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);text-align:left;flex:none;}
+    #log-table-wrap td:first-child, #coordinator-table-wrap td:first-child{font-size:14px;font-weight:700;}
+    #log-table-wrap td:last-child::before, #coordinator-table-wrap td:last-child::before{content:"";}
+    #log-table-wrap td select, #coordinator-table-wrap td select, #log-table-wrap td input, #coordinator-table-wrap td input{max-width:62%;}
+    .act-stack{grid-template-columns:repeat(4,auto);}
+    .act-stack .act-btn{width:auto;height:auto;padding:7px 12px;}
+    .act-stack .lbl{display:inline;}
+  }
   #log-table-wrap tbody tr:last-child td, #coordinator-table-wrap tbody tr:last-child td{border-bottom:none;}
 
   /* ---------- action buttons ---------- */
@@ -2111,6 +2129,10 @@ function renderCoordinatorDashboard(){
   document.getElementById("coord-dash-groups").innerHTML = waitNote + dashDetailHtml(groups, coordDashSel, coordinatorEntries, "coord");
 }
 
+function labelCells(wrap){
+  const heads = Array.prototype.map.call(wrap.querySelectorAll("thead th"), th => th.textContent.trim());
+  wrap.querySelectorAll("tbody tr").forEach(tr => Array.prototype.forEach.call(tr.children, (td, i) => { if(heads[i]) td.setAttribute("data-label", heads[i]); }));
+}
 function renderCoordinatorTable(){
   const wrap = document.getElementById("coordinator-table-wrap");
   renderCoordinatorDashboard();
@@ -2119,7 +2141,7 @@ function renderCoordinatorTable(){
     return;
   }
   const allClasses = allClassDefs();
-  let html = '<table><thead><tr><th>Child Name</th><th>DOB</th><th>Age</th><th>Service</th><th>Class</th><th>Parent(s)</th><th>Allergy/Condition</th><th>Photo OK?</th><th></th></tr></thead><tbody>';
+  let html = '<table><thead><tr><th>Child Name</th><th>DOB / Age</th><th>Service</th><th>Class</th><th>Parent(s)</th><th>Allergy / Photo</th><th></th></tr></thead><tbody>';
   coordinatorEntries.forEach((e,idx)=>{
     const id = e.ID || e.id || "";
     if(coordinatorEditingId === id){
@@ -2138,34 +2160,30 @@ function renderCoordinatorTable(){
       </select>`;
       html += `<tr data-id="${escapeHtml(id)}" style="background:#FFF8ED;">
         <td>${fld("edit-coord-name",e.ChildFullName)}${fld("edit-coord-nickname",e.ChildNickname)}</td>
-        <td>${fld("edit-coord-dob",e.ChildDob)}</td>
-        <td>${fld("edit-coord-age",e.ChildAge)}</td>
+        <td>${fld("edit-coord-dob",e.ChildDob)}${fld("edit-coord-age",e.ChildAge)}</td>
         <td>${escapeHtml(e.Service||"")}</td>
         <td>${classSelect}</td>
         <td>${fld("edit-coord-father",e.FatherName)}${fld("edit-coord-mother",e.MotherName)}</td>
-        <td>${yesNoSelect("edit-coord-allergy",e.Allergy)}${fld("edit-coord-allergy-detail",e.AllergyDetail)}${yesNoSelect("edit-coord-condition",e.Condition)}${fld("edit-coord-condition-detail",e.ConditionDetail)}</td>
-        <td>${yesNoSelect("edit-coord-photo",e.PhotoPermission)}</td>
+        <td>${yesNoSelect("edit-coord-allergy",e.Allergy)}${fld("edit-coord-allergy-detail",e.AllergyDetail)}${yesNoSelect("edit-coord-condition",e.Condition)}${fld("edit-coord-condition-detail",e.ConditionDetail)}<span style="font-size:11px;color:var(--ink-soft)">Photo OK? </span>${yesNoSelect("edit-coord-photo",e.PhotoPermission)}</td>
         <td>
           <div class="act-stack">
-            <button type="button" class="act-btn primary" onclick="saveCoordinatorEdit('${id}', this)">${ICON_CHECK} Save</button>
-            <button type="button" class="act-btn ghost" onclick="coordinatorEditingId=null; renderCoordinatorTable();">${ICON_X} Cancel</button>
+            <button type="button" class="act-btn primary" onclick="saveCoordinatorEdit('${id}', this)" title="Save" aria-label="Save">${ICON_CHECK} <span class="lbl">Save</span></button>
+            <button type="button" class="act-btn ghost" onclick="coordinatorEditingId=null; renderCoordinatorTable();" title="Cancel" aria-label="Cancel">${ICON_X} <span class="lbl">Cancel</span></button>
           </div>
         </td>
       </tr>`;
     } else {
       html += `<tr data-id="${escapeHtml(id)}">
         <td>${escapeHtml(e.ChildFullName||"")}${isActive(e)?"":' <span class="pill off">Inactive</span>'}<br><span style="color:var(--ink-soft)">${escapeHtml(e.ChildNickname||"")}</span></td>
-        <td>${escapeHtml(e.ChildDob||"")}</td>
-        <td>${escapeHtml(e.ChildAge||"")}</td>
+        <td>${escapeHtml(e.ChildDob||"")}<br><span style="color:var(--ink-soft)">${e.ChildAge ? escapeHtml(e.ChildAge) + " yrs" : ""}</span></td>
         <td>${escapeHtml(e.Service||"")}</td>
         <td>${e.AssignedClass ? escapeHtml(e.AssignedClass) : '<span class="pill warn">Not assigned</span>'}</td>
         <td>${escapeHtml(e.FatherName||"")}<br>${escapeHtml(e.MotherName||"")}</td>
-        <td>${escapeHtml(e.Allergy||"")}${e.AllergyDetail?": "+escapeHtml(e.AllergyDetail):""}<br>${escapeHtml(e.Condition||"")}${e.ConditionDetail?": "+escapeHtml(e.ConditionDetail):""}</td>
-        <td>${escapeHtml(e.PhotoPermission||"")}</td>
+        <td>${escapeHtml(e.Allergy||"")}${e.AllergyDetail?": "+escapeHtml(e.AllergyDetail):""}<br>${escapeHtml(e.Condition||"")}${e.ConditionDetail?": "+escapeHtml(e.ConditionDetail):""}<br><span style="color:var(--ink-soft)">Photo OK: ${escapeHtml(e.PhotoPermission||"-")}</span></td>
         <td>
           <div class="act-stack">
-            <button type="button" class="act-btn" onclick="coordinatorEditingId='${id}'; renderCoordinatorTable();">${ICON_EDIT} Edit</button>
-            <button type="button" class="act-btn ghost" onclick="previewChildPdf(coordinatorEntries[${idx}], this)">${ICON_EYE} View PDF</button>
+            <button type="button" class="act-btn" onclick="coordinatorEditingId='${id}'; renderCoordinatorTable();" title="Edit" aria-label="Edit">${ICON_EDIT} <span class="lbl">Edit</span></button>
+            <button type="button" class="act-btn ghost" onclick="previewChildPdf(coordinatorEntries[${idx}], this)" title="View PDF" aria-label="View PDF">${ICON_EYE} <span class="lbl">View PDF</span></button>
           </div>
         </td>
       </tr>`;
@@ -2173,6 +2191,7 @@ function renderCoordinatorTable(){
   });
   html += "</tbody></table>";
   wrap.innerHTML = html;
+  labelCells(wrap);
 }
 
 async function saveCoordinatorEdit(id, btn){
@@ -2570,7 +2589,7 @@ function renderTable(){
     wrap.innerHTML = '<p class="empty-note">No submissions match these filters.</p>';
     return;
   }
-  let html = '<table><thead><tr><th>Child Name</th><th>DOB</th><th>Age</th><th>Service</th><th>Class</th><th>Status</th><th>Parent(s)</th><th>Allergy/Condition</th><th>Photo OK?</th><th>Submitted</th><th></th></tr></thead><tbody>';
+  let html = '<table><thead><tr><th>Child Name</th><th>DOB / Age</th><th>Service</th><th>Class</th><th>Status</th><th>Parent(s)</th><th>Allergy / Photo</th><th>Submitted</th><th></th></tr></thead><tbody>';
   currentFiltered.forEach((e,idx)=>{
     const id = e.ID || e.id || "";
     const congregation = e.Service || "";
@@ -2601,40 +2620,36 @@ function renderTable(){
       </select>`;
       html += `<tr data-id="${escapeHtml(id)}" style="background:#FFF8ED;">
         <td>${fld("edit-name",e.ChildFullName)}${fld("edit-nickname",e.ChildNickname)}</td>
-        <td>${fld("edit-dob",e.ChildDob)}</td>
-        <td>${fld("edit-age",e.ChildAge)}</td>
+        <td>${fld("edit-dob",e.ChildDob)}${fld("edit-age",e.ChildAge)}</td>
         <td>${congSelect}</td>
         <td>${classSelectHtml}</td>
         <td><select id="edit-status-${id}" style="font-size:12px;padding:3px;"><option value="Active" ${isActive(e)?"selected":""}>Active</option><option value="Inactive" ${!isActive(e)?"selected":""}>Inactive</option></select></td>
         <td>${fld("edit-father",e.FatherName)}${fld("edit-mother",e.MotherName)}</td>
-        <td>${yesNoSelect("edit-allergy",e.Allergy)}${fld("edit-allergy-detail",e.AllergyDetail)}${yesNoSelect("edit-condition",e.Condition)}${fld("edit-condition-detail",e.ConditionDetail)}</td>
-        <td>${yesNoSelect("edit-photo",e.PhotoPermission)}</td>
+        <td>${yesNoSelect("edit-allergy",e.Allergy)}${fld("edit-allergy-detail",e.AllergyDetail)}${yesNoSelect("edit-condition",e.Condition)}${fld("edit-condition-detail",e.ConditionDetail)}<span style="font-size:11px;color:var(--ink-soft)">Photo OK? </span>${yesNoSelect("edit-photo",e.PhotoPermission)}</td>
         <td>${escapeHtml(e.Timestamp||"")}</td>
         <td>
           <div class="act-stack">
-            <button type="button" class="act-btn primary" onclick="saveEntryEdits('${id}', this)">${ICON_CHECK} Save</button>
-            <button type="button" class="act-btn ghost" onclick="editingRowId=null; renderTable();">${ICON_X} Cancel</button>
+            <button type="button" class="act-btn primary" onclick="saveEntryEdits('${id}', this)" title="Save" aria-label="Save">${ICON_CHECK} <span class="lbl">Save</span></button>
+            <button type="button" class="act-btn ghost" onclick="editingRowId=null; renderTable();" title="Cancel" aria-label="Cancel">${ICON_X} <span class="lbl">Cancel</span></button>
           </div>
         </td>
       </tr>`;
     } else {
       html += `<tr data-id="${escapeHtml(id)}">
         <td>${escapeHtml(e.ChildFullName||"")}${dupPill(e)}<br><span style="color:var(--ink-soft)">${escapeHtml(e.ChildNickname||"")}</span></td>
-        <td>${escapeHtml(e.ChildDob||"")}</td>
-        <td>${escapeHtml(e.ChildAge||"")}</td>
+        <td>${escapeHtml(e.ChildDob||"")}<br><span style="color:var(--ink-soft)">${e.ChildAge ? escapeHtml(e.ChildAge) + " yrs" : ""}</span></td>
         <td>${escapeHtml(congregation)}</td>
         <td>${classSelectHtml}</td>
         <td><button type="button" class="pill ${isActive(e)?"on":"off"}" title="Click to mark ${isActive(e)?"Inactive":"Active"}" onclick="toggleStatus('${id}', this)">${isActive(e)?"Active":"Inactive"}</button></td>
         <td>${escapeHtml(e.FatherName||"")}<br>${escapeHtml(e.MotherName||"")}</td>
-        <td>${escapeHtml(e.Allergy||"")}${e.AllergyDetail?": "+escapeHtml(e.AllergyDetail):""}<br>${escapeHtml(e.Condition||"")}${e.ConditionDetail?": "+escapeHtml(e.ConditionDetail):""}</td>
-        <td>${escapeHtml(e.PhotoPermission||"")}</td>
+        <td>${escapeHtml(e.Allergy||"")}${e.AllergyDetail?": "+escapeHtml(e.AllergyDetail):""}<br>${escapeHtml(e.Condition||"")}${e.ConditionDetail?": "+escapeHtml(e.ConditionDetail):""}<br><span style="color:var(--ink-soft)">Photo OK: ${escapeHtml(e.PhotoPermission||"-")}</span></td>
         <td>${escapeHtml(e.Timestamp||"")}</td>
         <td>
           <div class="act-stack">
-            <button type="button" class="act-btn" onclick="editingRowId='${id}'; renderTable();">${ICON_EDIT} Edit</button>
-            <button type="button" class="act-btn ghost" onclick="previewChildPdf(currentFiltered[${idx}], this)">${ICON_EYE} View PDF</button>
-            ${dupMap[id || "(no id)"] ? `<button type="button" class="act-btn" onclick="mergeFromRow('${id}', this)">${ICON_MERGE} Merge</button>` : ""}
-            <button type="button" class="act-btn ghost" onclick="archiveOne('${id}', this)">${ICON_ARCHIVE} Archive</button>
+            <button type="button" class="act-btn" onclick="editingRowId='${id}'; renderTable();" title="Edit" aria-label="Edit">${ICON_EDIT} <span class="lbl">Edit</span></button>
+            <button type="button" class="act-btn ghost" onclick="previewChildPdf(currentFiltered[${idx}], this)" title="View PDF" aria-label="View PDF">${ICON_EYE} <span class="lbl">View PDF</span></button>
+            ${dupMap[id || "(no id)"] ? `<button type="button" class="act-btn" onclick="mergeFromRow('${id}', this)" title="Merge" aria-label="Merge">${ICON_MERGE} <span class="lbl">Merge</span></button>` : ""}
+            <button type="button" class="act-btn ghost" onclick="archiveOne('${id}', this)" title="Archive" aria-label="Archive">${ICON_ARCHIVE} <span class="lbl">Archive</span></button>
           </div>
         </td>
       </tr>`;
@@ -2642,6 +2657,7 @@ function renderTable(){
   });
   html += "</tbody></table>";
   wrap.innerHTML = html;
+  labelCells(wrap);
 }
 
 async function saveEntryEdits(id, btn){
