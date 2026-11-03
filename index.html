@@ -203,7 +203,13 @@
   #log-table-wrap th:last-child, #coordinator-table-wrap th:last-child{border-top-right-radius:9px;}
   #log-table-wrap tbody tr:nth-child(even), #coordinator-table-wrap tbody tr:nth-child(even){background:#FCF9F5;}
   #log-table-wrap tbody tr:hover, #coordinator-table-wrap tbody tr:hover{background:#FFF3EA;}
-  #log-table-wrap td, #coordinator-table-wrap td{padding:9px 8px;}
+  #log-table-wrap td, #coordinator-table-wrap td{padding:10px 8px;vertical-align:middle;}
+  #log-table-wrap table, #coordinator-table-wrap table{min-width:1040px;}
+  #log-table-wrap td:nth-child(2), #log-table-wrap td:nth-child(3){white-space:nowrap;}
+  #log-table-wrap td select, #coordinator-table-wrap td select{min-width:128px;max-width:190px;height:32px;}
+  #log-table-wrap td:nth-last-child(2){white-space:nowrap;font-size:12px;}
+  #log-table-wrap td:last-child, #coordinator-table-wrap td:last-child{width:118px;}
+  .act-stack .act-btn{width:100%;}
   #log-table-wrap tbody tr:last-child td, #coordinator-table-wrap tbody tr:last-child td{border-bottom:none;}
 
   /* ---------- action buttons ---------- */
@@ -297,12 +303,13 @@
   .global-bar{justify-content:flex-end !important;margin-bottom:4px;}
 
   /* ---------- attendance controls ---------- */
-  .att-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;align-items:end;}
+  .att-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:end;}
   .att-grid .fld{display:flex;flex-direction:column;gap:5px;margin:0;}
   .att-grid .fld > span{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);}
   .att-grid select,.att-grid input{width:100%;height:38px;padding:0 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;margin:0;}
-  .att-grid .wide{grid-column:span 2;}
-  @media (max-width:600px){.att-grid .wide{grid-column:span 1;}}
+  .att-grid .wide{grid-column:span 3;}
+  .att-grid .full{grid-column:1 / -1;}
+  @media (max-width:640px){.att-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.att-grid .wide,.att-grid .full{grid-column:1 / -1;}}
   .att-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
 
   /* ---------- service cards + detail ---------- */
@@ -340,6 +347,18 @@
   .cls-list .stu .ag{color:var(--ink-soft);font-size:11.5px;}
   .cls-list .go{margin-top:6px;}
   .dd-foot{font-size:12px;color:var(--ink-soft);margin:-4px 0 12px;}
+
+  /* ---------- on/off switch ---------- */
+  .switch{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-right:6px;user-select:none;}
+  .switch input{position:absolute;opacity:0;width:0;height:0;}
+  .switch .knob{width:34px;height:20px;border-radius:99px;background:#D6CEC5;position:relative;transition:background .15s;flex:none;}
+  .switch .knob::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s;}
+  .switch input:checked + .knob{background:#2C6B4F;}
+  .switch input:checked + .knob::after{transform:translateX(14px);}
+  .switch input:focus-visible + .knob{outline:2px solid var(--coral);outline-offset:2px;}
+  .switch input:disabled + .knob{opacity:.5;}
+  tr.focus-row td{animation:rowflash 1.6s ease 3;}
+  @keyframes rowflash{0%,100%{background:transparent;}50%{background:#FFE9A8;}}
   /* ---------- collapsible sections ---------- */
   .sec{border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:14px;overflow:hidden;}
   .sec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;background:var(--cream);cursor:pointer;}
@@ -374,6 +393,7 @@
   /* ---------- status pills ---------- */
   .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid transparent;font-family:inherit;}
   .pill.on{background:#E3F2EA;color:#2C6B4F;border-color:#B8DCC8;}
+  .pill.warn{background:#FFF1D6;color:#8A5A00;border-color:#F1D79B;}
   .pill.off{background:#EEE9E3;color:#7C746B;border-color:#D9D1C8;}
   button.pill{cursor:pointer;} button.pill:hover{filter:brightness(.95);} button.pill:disabled{opacity:.6;cursor:progress;}
   .cls-chip.yn{background:#F0E9FF;color:#6A3CCB;border:1px solid #D6C6F7;}
@@ -824,6 +844,7 @@ body.printing-attendance #attendance-print-view{ display:block; padding:20px; }
             <button type="button" class="act-btn primary" id="bk-now-btn">Back up now</button>
             <button type="button" class="act-btn ghost" id="bk-refresh-btn">Refresh</button>
             <button type="button" class="act-btn" id="archive-inactive-btn">Archive all Inactive</button>
+            <button type="button" class="act-btn danger" id="archive-delete-all-btn">Delete all archived</button>
           </div>
           <div id="archive-list"><p class="empty-note">Loading archive...</p></div></div>
       </div>
@@ -863,7 +884,7 @@ body.printing-attendance #attendance-print-view{ display:block; padding:20px; }
 
           <div class="subcard" style="margin-top:18px;">
             <h4>Export Attendance Template</h4>
-            <div class="att-grid"><label class="fld wide"><span>Class</span><select id="att-class-coord"></select></label><label class="fld"><span>Quarter</span><select id="att-quarter-coord"><option value="">Custom range</option><option value="1">Q1 (Jan-Mar)</option><option value="2">Q2 (Apr-Jun)</option><option value="3">Q3 (Jul-Sep)</option><option value="4">Q4 (Oct-Dec)</option></select></label><label class="fld"><span>From</span><select id="att-month-from-coord"></select></label><label class="fld"><span>To</span><select id="att-month-to-coord"></select></label><label class="fld"><span>Year</span><input type="number" id="att-year-coord" placeholder="Year"></label></div>
+            <div class="att-grid"><label class="fld full"><span>Class</span><select id="att-class-coord"></select></label><label class="fld"><span>Quarter</span><select id="att-quarter-coord"><option value="">Custom range</option><option value="1">Q1 (Jan-Mar)</option><option value="2">Q2 (Apr-Jun)</option><option value="3">Q3 (Jul-Sep)</option><option value="4">Q4 (Oct-Dec)</option></select></label><label class="fld"><span>From</span><select id="att-month-from-coord"></select></label><label class="fld"><span>To</span><select id="att-month-to-coord"></select></label><label class="fld"><span>Year</span><input type="number" id="att-year-coord" placeholder="Year"></label></div>
             <div class="att-actions"><button type="button" class="act-btn" id="att-export-coord"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></svg> Download CSV</button><button type="button" class="act-btn primary" id="att-print-coord"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg> Print Attendance Sheet</button></div>
           </div>
         </div>
@@ -934,6 +955,7 @@ const ICON_EYE  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
 const ICON_ARCHIVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 002 2h12a2 2 0 002-2V8M10 12h4"/></svg>';
 const ICON_TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
+const ICON_MERGE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 009 9"/></svg>';
 const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
 
 let pdfPreviewUrl = null, pdfPreviewFile = "document.pdf";
@@ -1274,6 +1296,7 @@ function unlockAdmin(){
       statusEl.innerHTML = "";
       renderTable();
       populateAttendanceControls("admin");
+      focusPendingChild();
       loadCoordinatorList();
       loadArchive();
       secHooked = {};
@@ -1292,6 +1315,28 @@ window.addEventListener("beforeprint", ()=>{
   const el = document.getElementById("print-date");
   if(el) el.textContent = "Printed " + new Date().toLocaleString("en-GB", { day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" });
 });
+
+// ---------- Deep link from a notification: #admin=TOWKCM-LK-07 ----------
+let pendingFocusId = "";
+function focusPendingChild(){
+  if(!pendingFocusId) return;
+  const id = pendingFocusId;
+  pendingFocusId = "";
+  const e = allEntries.find(x => (x.ID || x.id) === id);
+  if(!e){ showToast("Could not find " + id + " - it may have been archived.", "err"); return; }
+  document.getElementById("filter-name").value = e.ChildFullName || "";
+  document.getElementById("filter-congregation").value = "";
+  document.getElementById("filter-class").value = "";
+  document.getElementById("filter-status").value = "";
+  setSection("submissions", true);
+  renderTable();
+  const row = Array.prototype.find.call(document.querySelectorAll("#log-table-wrap tr[data-id]"), r => r.dataset.id === id);
+  if(row){
+    row.classList.add("focus-row");
+    if(row.scrollIntoView) row.scrollIntoView({ behavior:"smooth", block:"center" });
+  }
+  showToast("Opened " + (e.ChildFullName || id) + " - choose a class in the Class column", "ok");
+}
 
 // ---------- Admin: collapsible sections ----------
 const SEC_KEY = "lk_admin_sections";
@@ -1333,6 +1378,119 @@ applySections();
 
 // ---------- Admin: status, dashboard, youth promotion ----------
 function isActive(e){ return (e.Status || "Active") !== "Inactive"; }
+
+// ---- possible duplicate submissions (same child name entered more than once) ----
+let dupMap = {}, dupOnly = false;
+function normName(n){ return String(n || "").toLowerCase().replace(/\s+/g, " ").trim(); }
+// Two submissions are treated as the SAME child when they share common details - they do not have to
+// match exactly. Spelling/word order of names, parent names or phone numbers, birth date and age are compared.
+function nameTokens(n){ return normName(n).replace(/[^\p{L}\p{N} ]/gu, " ").split(" ").filter(Boolean); }
+function nameLike(a, b){
+  const x = nameTokens(a), y = nameTokens(b);
+  if(!x.length || !y.length) return false;
+  const [small, big] = x.length <= y.length ? [x, y] : [y, x];
+  return small.length >= 2 ? small.every(t => big.indexOf(t) !== -1) : (big.indexOf(small[0]) !== -1 && big.length <= 2);
+}
+function phoneKey(v){ const d = String(v || "").replace(/\D/g, ""); return d.length >= 7 ? d.slice(-8) : ""; }
+function parentOverlap(a, b){
+  const pa = [a.FatherName, a.MotherName], pb = [b.FatherName, b.MotherName];
+  for(const x of pa) for(const y of pb) if(x && y && nameLike(x, y)) return true;
+  const ca = [a.FatherContact, a.MotherContact].map(phoneKey).filter(Boolean), cb = [b.FatherContact, b.MotherContact].map(phoneKey).filter(Boolean);
+  return ca.some(c => cb.indexOf(c) !== -1);
+}
+function sameDob(a, b){ const x = String(a.ChildDob || "").trim(); return !!x && x === String(b.ChildDob || "").trim(); }
+function sameAge(a, b){ const x = String(a.ChildAge || "").trim(); return !!x && x === String(b.ChildAge || "").trim(); }
+function sameChild(a, b){
+  const nameExact = normName(a.ChildFullName) && normName(a.ChildFullName) === normName(b.ChildFullName);
+  const nameClose = nameExact || nameLike(a.ChildFullName, b.ChildFullName) || nameLike(a.ChildNickname, b.ChildFullName) || nameLike(a.ChildFullName, b.ChildNickname);
+  const par = parentOverlap(a, b), dob = sameDob(a, b);
+  return nameExact || (nameClose && (dob || par || sameAge(a, b))) || (dob && par);
+}
+function dupGroups(){
+  const list = allEntries.slice(), parent = list.map((_, i) => i);
+  const find = i => parent[i] === i ? i : (parent[i] = find(parent[i]));
+  for(let i = 0; i < list.length; i++) for(let j = i + 1; j < list.length; j++) if(sameChild(list[i], list[j])) parent[find(i)] = find(j);
+  const by = {};
+  list.forEach((e, i) => { const r = find(i); (by[r] = by[r] || []).push(e); });
+  return Object.keys(by).map(k => by[k]).filter(g => g.length > 1);
+}
+function duplicateMap(){
+  const m = {};
+  dupGroups().forEach(g => g.forEach(e => { m[e.ID || e.id || "(no id)"] = g.filter(x => x !== e).map(x => x.ID || x.id || "(no id)"); }));
+  return m;
+}
+function dupPill(e){
+  const others = dupMap[e.ID || e.id || "(no id)"];
+  return others ? ` <span class="pill warn" title="Looks like the same child as: ${escapeHtml(others.join(", "))} (similar name, birth date, age or parents). Merge them or archive the extra.">Possible duplicate</span>` : "";
+}
+// sure = same birth date throughout, or every record matches the kept one on name AND parent details
+function groupIsExact(g){
+  const dobs = new Set(g.map(e => String(e.ChildDob || "").trim()));
+  if(dobs.size === 1 && !dobs.has("")) return true;
+  const k = pickKeep(g);
+  return g.every(e => e === k || (nameLike(e.ChildFullName, k.ChildFullName) && parentOverlap(e, k)));
+}
+// keep the record that already has a class; otherwise the oldest submission
+function pickKeep(g){
+  const assigned = g.filter(e => e.AssignedClass);
+  const pool = assigned.length ? assigned : g;
+  return pool.slice().sort((a, b) => String(a.Timestamp || "").localeCompare(String(b.Timestamp || "")))[0];
+}
+function mergeSummary(g){
+  const keep = pickKeep(g), drops = g.filter(e => e !== keep);
+  return { keep: keep, drops: drops, text: (keep.ChildFullName || "") + ": keep " + (keep.ID || "?") + (keep.AssignedClass ? " (" + keep.AssignedClass + ")" : " (no class)") + ", merge in " + drops.map(e => e.ID || "?").join(", ") };
+}
+async function runMerge(g){
+  const m = mergeSummary(g);
+  await postAdmin({ action:"mergeEntries", keepId: m.keep.ID || m.keep.id, dropIds: m.drops.map(e => e.ID || e.id) });
+}
+async function mergeFromRow(id, btn){
+  const e = allEntries.find(x => (x.ID || x.id) === id);
+  if(!e) return;
+  const g = dupGroups().find(grp => grp.indexOf(e) !== -1);
+  if(!g){ showToast("No duplicate found for this child", ""); return; }
+  const m = mergeSummary(g);
+  const classes = new Set(g.map(x => x.AssignedClass).filter(Boolean));
+  let msg = "Merge duplicates of " + (e.ChildFullName || id) + "?\n\n" + m.text +
+    "\n\nThe newest non-blank answers are kept. The duplicate(s) move to the Archive, so nothing is lost.";
+  if(!groupIsExact(g)) msg += "\n\nCAUTION: the details are similar but not an exact match (birth dates differ or are missing). Only merge if these are the same child.";
+  if(classes.size > 1) msg += "\n\nThey are in different classes - the kept record's class (" + (m.keep.AssignedClass || "none") + ") will be used.";
+  if(!confirm(msg)) return;
+  const restore = setBusy(btn, "Merging...");
+  showToast("Merging duplicates...", "busy");
+  try{
+    await runMerge(g);
+    await Promise.all([loadEntries(), loadArchive()]);
+    showToast("Merged into " + (m.keep.ID || "record"), "ok");
+  }catch(err){
+    restore();
+    showToast("Could not merge: " + (err.message || err), "err");
+  }
+}
+async function mergeAllExact(btn){
+  const groups = dupGroups().filter(groupIsExact);
+  if(!groups.length) return;
+  const list = groups.slice(0, 8).map(g => "\u2022 " + mergeSummary(g).text).join("\n") + (groups.length > 8 ? "\n...and " + (groups.length - 8) + " more" : "");
+  if(!confirm("Merge " + groups.length + " likely-duplicate group(s) (matching name plus birth date or parent details)?\n\n" + list + "\n\nDuplicates move to the Archive and can be restored.")) return;
+  const restore = setBusy(btn, "Merging...");
+  let done = 0, failed = 0;
+  for(const g of groups){
+    showToast("Merging " + (done + failed + 1) + " of " + groups.length + "...", "busy");
+    try{ await runMerge(g); done++; }catch(err){ failed++; }
+  }
+  await Promise.all([loadEntries(), loadArchive()]);
+  restore();
+  showToast(done + " merged" + (failed ? ", " + failed + " failed" : ""), failed ? "err" : "ok");
+}
+
+function showDuplicates(){
+  dupOnly = true;
+  document.getElementById("sort-by").value = "name-asc";
+  setSection("submissions", true);
+  renderTable();
+  const el = document.querySelector('[data-sec="submissions"]');
+  if(el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
 async function postAdmin(payload){
   const res = await fetch(SHEET_ENDPOINT, { method:"POST", body: JSON.stringify(Object.assign({ pass: adminPasscodeValue }, payload)) });
@@ -1384,7 +1542,7 @@ const openRows = { admin: new Set(), coord: new Set() };
 function studentListHtml(r, list, scope){
   const kids = list.filter(r.pred).sort((a, b) => (a.ChildFullName || "").localeCompare(b.ChildFullName || ""));
   const rowsHtml = kids.map((e, i) => `<div class="stu${isActive(e) ? "" : " off"}"><span class="no">${i + 1}</span>
-      <span class="nm">${escapeHtml(e.ChildFullName || "")}${e.ChildNickname ? ` <span style="color:var(--ink-soft)">(${escapeHtml(e.ChildNickname)})</span>` : ""}</span>
+      <span class="nm">${escapeHtml(e.ChildFullName || "")}${dupPill(e)}${e.ChildNickname ? ` <span style="color:var(--ink-soft)">(${escapeHtml(e.ChildNickname)})</span>` : ""}</span>
       <span class="ag">${e.ChildAge ? "Age " + escapeHtml(String(e.ChildAge)) : ""}</span>
       <span class="pill ${isActive(e) ? "on" : "off"}">${isActive(e) ? "Active" : "Inactive"}</span></div>`).join("");
   const go = (scope === "admin" && r.isClass)
@@ -1437,9 +1595,13 @@ function renderDashboard(){
   cardsEl.innerHTML = dashCardsHtml(groups, adminDashSel, "admin", archCard);
 
   const cands = youthCandidates();
-  document.getElementById("dash-note").innerHTML = cands.length
+  const dupCount = Object.keys(dupMap).length;
+  const exactGroups = dupGroups().filter(groupIsExact).length;
+  document.getElementById("dash-note").innerHTML = (cands.length
     ? `<div class="dash-note"><span><b>${cands.length}</b> active ${cands.length === 1 ? "child is" : "children are"} 13 or older and not yet in Youth Network.</span><button type="button" class="act-btn primary" onclick="promoteYouth(this)">Move to Youth Network</button></div>`
-    : "";
+    : "") + (dupCount
+    ? `<div class="dash-note"><span><b>${dupCount}</b> submissions look like the same child as another one (similar name, birth date, age or parents; possible duplicates, so a child may be counted twice). Merge them, or archive the extra.</span><span style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="act-btn" onclick="showDuplicates()">Show them</button>${exactGroups ? `<button type="button" class="act-btn primary" onclick="mergeAllExact(this)">${ICON_MERGE} Merge ${exactGroups} exact match${exactGroups === 1 ? "" : "es"}</button>` : ""}</span></div>`
+    : "");
   const noSvc = countBy(allEntries, e => !e.Service && !e.AssignedClass);
   document.getElementById("dash-groups").innerHTML = dashDetailHtml(groups, adminDashSel, allEntries, "admin") +
     ((noSvc.a + noSvc.o) > 0 ? `<div class="dd-foot">${noSvc.a + noSvc.o} child(ren) have no service or class yet.</div>` : "");
@@ -1511,6 +1673,7 @@ function renderArchive(){
       <span class="cm-actions">
         <button type="button" class="act-btn ghost" onclick="previewChildPdf(archiveList[${i}], this)">${ICON_EYE} View PDF</button>
         <button type="button" class="act-btn" onclick="restoreOne('${escapeHtml(e.ID || "")}', this)">Restore</button>
+        <button type="button" class="act-btn danger" title="Delete permanently" onclick="deleteArchivedOne('${escapeHtml(e.ID || "")}', this)">${ICON_TRASH} Delete</button>
       </span>
     </div>`).join("") + '</div>';
 }
@@ -1542,6 +1705,34 @@ function archiveInactive(btn){
   if(!confirm("Archive all " + ids.length + " inactive child(ren)?\n\nYou can restore any of them later.")) return;
   archiveIds(ids, "inactive", btn);
 }
+async function deleteArchivedIds(ids, btn){
+  const restore = setBusy(btn, "Deleting...");
+  showToast("Deleting permanently...", "busy");
+  try{
+    const data = await postAdmin({ action:"deleteArchived", ids: ids });
+    archiveList = archiveList.filter(e => ids.indexOf(e.ID || e.id) === -1);
+    renderArchive();
+    renderDashboard();
+    showToast((data.deleted != null ? data.deleted : ids.length) + " permanently deleted", "ok");
+  }catch(err){
+    restore();
+    showToast("Could not delete: " + (err.message || err) + " (redeploy the Apps Script as a New version if you just updated it)", "err");
+  }
+}
+function deleteArchivedOne(id, btn){
+  const e = archiveList.find(x => (x.ID || x.id) === id);
+  if(!id || !e) return;
+  if(!confirm("PERMANENTLY delete " + (e.ChildFullName || id) + " (" + id + ") from the Archive?\n\nThis cannot be undone. Weekly backup copies may still hold them until they expire.")) return;
+  deleteArchivedIds([id], btn);
+}
+function deleteAllArchived(btn){
+  if(!archiveList.length){ showToast("The archive is empty", ""); return; }
+  const n = archiveList.length;
+  const typed = prompt("This PERMANENTLY deletes all " + n + " archived child(ren). It cannot be undone.\n\nType DELETE to confirm:");
+  if(typed === null) return;
+  if(typed.trim() !== "DELETE"){ showToast("Not deleted - you must type DELETE", "err"); return; }
+  deleteArchivedIds(archiveList.map(e => e.ID || e.id).filter(Boolean), btn);
+}
 async function restoreOne(id, btn){
   if(!id) return;
   const restore = setBusy(btn, "Restoring...");
@@ -1556,6 +1747,7 @@ async function restoreOne(id, btn){
   }
 }
 document.getElementById("archive-inactive-btn").addEventListener("click", e => archiveInactive(e.currentTarget));
+document.getElementById("archive-delete-all-btn").addEventListener("click", e => deleteAllArchived(e.currentTarget));
 
 // ---------- Admin: backup ----------
 async function loadBackupInfo(){
@@ -1621,11 +1813,30 @@ function renderCoordinatorManager(){
         </div>
         ${classChipGroups(c.classes || [])}
       </div>
-      <div class="cm-actions">
+      <div class="cm-actions" style="align-items:center;">
+        <label class="switch" title="Main coordinator: also sees and assigns children who have no class yet"><input type="checkbox" ${c.main ? "checked" : ""} onchange="toggleMain(${i}, this)"><span class="knob"></span><span>Main</span></label>
         <button type="button" class="icon-btn" title="Edit coordinator" aria-label="Edit coordinator" onclick="openCoordForm(${i})">${ICON_EDIT}</button>
         <button type="button" class="icon-btn out" title="Remove access" aria-label="Remove access" onclick="removeCoord(${i}, this)">${ICON_TRASH}</button>
       </div>
     </div>`).join("") + '</div>';
+}
+
+async function toggleMain(i, input){
+  const c = coordList[i];
+  if(!c) return;
+  const want = input.checked;
+  input.disabled = true;
+  showToast("Updating main access...", "busy");
+  try{
+    await postAdmin({ action:"saveCoordinator", originalName: c.name, name: c.name, passcode: c.passcode, classes: c.classes, main: want });
+    c.main = want;
+    showToast(c.name + ": main access " + (want ? "ON" : "OFF"), "ok");
+  }catch(err){
+    input.checked = !want;
+    showToast("Could not update: " + (err.message || err), "err");
+  }finally{
+    input.disabled = false;
+  }
 }
 
 function toggleCoordPw(i, btn){
@@ -1651,6 +1862,7 @@ function openCoordForm(i){
       ${group("Chinese · Saturday", CLASS_DEFINITIONS.Chinese)}
       ${group("English · Sunday", CLASS_DEFINITIONS.English)}
       ${group("Youth · 13 and above", CLASS_DEFINITIONS.Youth)}
+      <label class="cm-check" style="margin:2px 0 12px;"><input type="checkbox" id="cm-main" ${c.main ? "checked" : ""}> <span><b>Main coordinator</b> &ndash; can also see and assign children who have no class yet</span></label>
       <div class="cm-form-actions">
         <button type="button" class="act-btn primary" id="cm-save-btn" onclick="saveCoordForm(this)">${ICON_CHECK} Save</button>
         <button type="button" class="act-btn ghost" onclick="closeCoordForm()">${ICON_X} Cancel</button>
@@ -1673,7 +1885,7 @@ async function saveCoordForm(btn){
   try{
     const res = await fetch(SHEET_ENDPOINT, {
       method: "POST",
-      body: JSON.stringify({ action:"saveCoordinator", pass: adminPasscodeValue, originalName: coordFormOriginal || "", name: name, passcode: passcode, classes: classes })
+      body: JSON.stringify({ action:"saveCoordinator", pass: adminPasscodeValue, originalName: coordFormOriginal || "", name: name, passcode: passcode, classes: classes, main: document.getElementById("cm-main").checked })
     });
     const data = await res.json();
     if(data.status === "error") throw new Error(data.message || "could not save");
@@ -1795,12 +2007,15 @@ function unlockCoordinator(){
       coordinatorClasses = data.classes || [];
       coordinatorEntries = data.entries || [];
       coordinatorName = data.coordinatorName || "My class";
+      coordinatorMain = !!data.main;
+      sortCoordinatorEntries();
       statusEl.innerHTML = "";
       renderCoordinatorHeader();
       document.getElementById("coordinator-gate").style.display = "none";
       document.getElementById("coordinator-content").style.display = "block";
       renderCoordinatorTable();
       populateAttendanceControls("coordinator");
+      focusPendingCoordinatorChild();
     })
     .catch(()=>{
       statusEl.innerHTML = '<div class="status-msg err">Could not reach the server. Try again.</div>';
@@ -1810,12 +2025,33 @@ function unlockCoordinator(){
 }
 
 let coordinatorName = "";
+let coordinatorMain = false;
+let pendingCoordFocusId = "";
+function focusPendingCoordinatorChild(){
+  if(!pendingCoordFocusId) return;
+  const id = pendingCoordFocusId;
+  pendingCoordFocusId = "";
+  const e = coordinatorEntries.find(x => (x.ID || x.id) === id);
+  if(!e){ showToast(id + " is not in your classes (or is no longer in the list).", "err"); return; }
+  coordinatorEditingId = id;           // open it straight in edit mode so the class can be chosen
+  renderCoordinatorTable();
+  const row = Array.prototype.find.call(document.querySelectorAll("#coordinator-table-wrap tr[data-id]"), r => r.dataset.id === id);
+  if(row){
+    row.classList.add("focus-row");
+    if(row.scrollIntoView) row.scrollIntoView({ behavior:"smooth", block:"center" });
+  }
+  showToast((e.ChildFullName || id) + " is open - choose a class, then press Save", "ok");
+}
+function sortCoordinatorEntries(){
+  // children still waiting for a class come first, then A-Z
+  coordinatorEntries.sort((a, b) => ((a.AssignedClass ? 1 : 0) - (b.AssignedClass ? 1 : 0)) || (a.ChildFullName || "").localeCompare(b.ChildFullName || ""));
+}
 function renderCoordinatorHeader(){
   const name = coordinatorName || "My class";
   document.getElementById("coordinator-title").textContent = name;
   document.getElementById("coordinator-avatar").textContent = (name.trim().charAt(0) || "?").toUpperCase();
   const n = coordinatorClasses.length;
-  document.getElementById("coordinator-sub").textContent = n + (n === 1 ? " class" : " classes") + " assigned";
+  document.getElementById("coordinator-sub").textContent = n + (n === 1 ? " class" : " classes") + " assigned" + (coordinatorMain ? " \u00b7 Main coordinator (also sees children not yet assigned)" : "");
   document.getElementById("coordinator-chips").innerHTML = classChipGroups(coordinatorClasses);
 }
 function isChineseClass(name){ return CLASS_DEFINITIONS.Chinese.some(c => c.name === name); }
@@ -1833,6 +2069,7 @@ document.getElementById("coordinator-logout").addEventListener("click", ()=>{
   coordinatorClasses = [];
   coordinatorEntries = [];
   coordinatorName = "";
+  coordinatorMain = false;
   openRows.coord.clear();
   document.getElementById("coordinator-pass").value = "";
   document.getElementById("coordinator-gate-status").innerHTML = "";
@@ -1849,6 +2086,8 @@ async function loadCoordinatorEntries(){
     if(data.status === "error") throw new Error(data.message || "unauthorized");
     coordinatorClasses = data.classes || [];
     coordinatorEntries = data.entries || [];
+    coordinatorMain = !!data.main;
+    sortCoordinatorEntries();
     renderCoordinatorHeader();
     renderCoordinatorTable();
   }catch(e){
@@ -1862,12 +2101,14 @@ let coordinatorEditingId = null;
 function renderCoordinatorDashboard(){
   const cardsEl = document.getElementById("coord-tiles");
   if(!cardsEl) return;
-  const groups = buildGroups(coordinatorEntries, coordinatorClasses, false);
+  const groups = buildGroups(coordinatorEntries, coordinatorClasses, coordinatorMain);
   cardsEl.className = "svc-grid";
   if(!groups.length){ cardsEl.innerHTML = ""; document.getElementById("coord-dash-groups").innerHTML = ""; return; }
   if(!groups.some(g => g.key === coordDashSel)) coordDashSel = groups[0].key;
   cardsEl.innerHTML = dashCardsHtml(groups, coordDashSel, "coord", "");
-  document.getElementById("coord-dash-groups").innerHTML = dashDetailHtml(groups, coordDashSel, coordinatorEntries, "coord");
+  const waiting = coordinatorMain ? coordinatorEntries.filter(e => !e.AssignedClass).length : 0;
+  const waitNote = waiting ? `<div class="dash-note"><span><b>${waiting}</b> ${waiting === 1 ? "child is" : "children are"} not yet assigned to a class. They are at the top of the list below - press Edit to choose a class.</span></div>` : "";
+  document.getElementById("coord-dash-groups").innerHTML = waitNote + dashDetailHtml(groups, coordDashSel, coordinatorEntries, "coord");
 }
 
 function renderCoordinatorTable(){
@@ -1892,9 +2133,10 @@ function renderCoordinatorTable(){
       // a coordinator may need to move a child across services, and this dropdown
       // should never come up empty regardless of what's on file for this child.
       const classSelect = `<select id="edit-coord-class-${id}" style="font-size:12px;padding:3px;">
-        ${allClasses.map(c => `<option value="${escapeHtml(c.name)}" ${e.AssignedClass===c.name?"selected":""}>${escapeHtml(classDisplayLabel(c))}</option>`).join("")}
+        ${e.AssignedClass ? "" : '<option value="" selected>-- Select class --</option>'}
+        ${allClasses.map(c => `<option value="${escapeHtml(c.name)}" ${e.AssignedClass===c.name?"selected":""}>${escapeHtml(classDisplayLabel(c))}${!e.AssignedClass && suggestClass(e.Service, e.ChildDob) === c.name ? " (suggested)" : ""}</option>`).join("")}
       </select>`;
-      html += `<tr style="background:#FFF8ED;">
+      html += `<tr data-id="${escapeHtml(id)}" style="background:#FFF8ED;">
         <td>${fld("edit-coord-name",e.ChildFullName)}${fld("edit-coord-nickname",e.ChildNickname)}</td>
         <td>${fld("edit-coord-dob",e.ChildDob)}</td>
         <td>${fld("edit-coord-age",e.ChildAge)}</td>
@@ -1911,12 +2153,12 @@ function renderCoordinatorTable(){
         </td>
       </tr>`;
     } else {
-      html += `<tr>
+      html += `<tr data-id="${escapeHtml(id)}">
         <td>${escapeHtml(e.ChildFullName||"")}${isActive(e)?"":' <span class="pill off">Inactive</span>'}<br><span style="color:var(--ink-soft)">${escapeHtml(e.ChildNickname||"")}</span></td>
         <td>${escapeHtml(e.ChildDob||"")}</td>
         <td>${escapeHtml(e.ChildAge||"")}</td>
         <td>${escapeHtml(e.Service||"")}</td>
-        <td>${escapeHtml(e.AssignedClass||"")}</td>
+        <td>${e.AssignedClass ? escapeHtml(e.AssignedClass) : '<span class="pill warn">Not assigned</span>'}</td>
         <td>${escapeHtml(e.FatherName||"")}<br>${escapeHtml(e.MotherName||"")}</td>
         <td>${escapeHtml(e.Allergy||"")}${e.AllergyDetail?": "+escapeHtml(e.AllergyDetail):""}<br>${escapeHtml(e.Condition||"")}${e.ConditionDetail?": "+escapeHtml(e.ConditionDetail):""}</td>
         <td>${escapeHtml(e.PhotoPermission||"")}</td>
@@ -1991,6 +2233,8 @@ async function saveCoordinatorEdit(id, btn){
 // ---------- attendance template export ----------
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
+// Attendance lists are always in alphabetical order (A-Z), ignoring case; works for Chinese names too
+function byChildName(a, b){ return String(a.ChildFullName||"").trim().localeCompare(String(b.ChildFullName||"").trim(), undefined, { sensitivity:"base" }); }
 function populateAttendanceControls(scope){
   const yearSel = document.getElementById(scope==="admin" ? "att-year-admin" : "att-year-coord");
   const fromSel = document.getElementById(scope==="admin" ? "att-month-from-admin" : "att-month-from-coord");
@@ -2118,7 +2362,7 @@ function attendanceLabel(congregation, key){
 function exportAttendanceTemplate(congregation, className, fromMonth, toMonth, year, sourceEntries){
   const dayType = dayTypeForClass(congregation, className);
   const dates = datesForDayTypeRange(year, fromMonth, toMonth, dayType);
-  const students = sourceEntries.filter(e => (e.AssignedClass||"") === className && (e.Status||"Active") !== "Inactive");
+  const students = sourceEntries.filter(e => (e.AssignedClass||"") === className && (e.Status||"Active") !== "Inactive").slice().sort(byChildName);
   const rows = [
     ["LitKids Attendance Sheet"],
     ["Service:", congregation],
@@ -2207,7 +2451,7 @@ function buildAttendancePrintView(congregation, className, fromMonth, toMonth, y
 
   const dayType = dayTypeForClass(congregation, className);
   const dates = datesForDayTypeRange(year, fromMonth, toMonth, dayType);
-  const students = sourceEntries.filter(e => (e.AssignedClass||"") === className && (e.Status||"Active") !== "Inactive");
+  const students = sourceEntries.filter(e => (e.AssignedClass||"") === className && (e.Status||"Active") !== "Inactive").slice().sort(byChildName);
   const noLabel = attendanceLabel(congregation, "no");
   const nameLabel = attendanceLabel(congregation, "name");
 
@@ -2290,6 +2534,7 @@ function getFilteredSortedEntries(){
     if(classFilter && (e.AssignedClass||"") !== classFilter) return false;
     if(photoFilter && (e.PhotoPermission||"") !== photoFilter) return false;
     if(statusFilter && (isActive(e) ? "Active" : "Inactive") !== statusFilter) return false;
+    if(dupOnly && !dupMap[e.ID || e.id || "(no id)"]) return false;
     return true;
   });
 
@@ -2312,9 +2557,10 @@ let editingRowId = null;
 
 function renderTable(){
   const wrap = document.getElementById("log-table-wrap");
+  dupMap = duplicateMap();
   renderDashboard();
   const subCount = document.getElementById("sub-count");
-  if(subCount) subCount.textContent = allEntries.length + (allEntries.length === 1 ? " child" : " children");
+  if(subCount) subCount.textContent = allEntries.length + (allEntries.length === 1 ? " child" : " children") + (dupOnly ? " \u00b7 showing possible duplicates only" : "");
   if(allEntries.length===0){
     wrap.innerHTML = '<p class="empty-note">No submissions yet.</p>';
     return;
@@ -2353,7 +2599,7 @@ function renderTable(){
         <option value="Chinese" ${congregation==="Chinese"?"selected":""}>Chinese</option>
         <option value="English" ${congregation==="English"?"selected":""}>English</option>
       </select>`;
-      html += `<tr style="background:#FFF8ED;">
+      html += `<tr data-id="${escapeHtml(id)}" style="background:#FFF8ED;">
         <td>${fld("edit-name",e.ChildFullName)}${fld("edit-nickname",e.ChildNickname)}</td>
         <td>${fld("edit-dob",e.ChildDob)}</td>
         <td>${fld("edit-age",e.ChildAge)}</td>
@@ -2372,8 +2618,8 @@ function renderTable(){
         </td>
       </tr>`;
     } else {
-      html += `<tr>
-        <td>${escapeHtml(e.ChildFullName||"")}<br><span style="color:var(--ink-soft)">${escapeHtml(e.ChildNickname||"")}</span></td>
+      html += `<tr data-id="${escapeHtml(id)}">
+        <td>${escapeHtml(e.ChildFullName||"")}${dupPill(e)}<br><span style="color:var(--ink-soft)">${escapeHtml(e.ChildNickname||"")}</span></td>
         <td>${escapeHtml(e.ChildDob||"")}</td>
         <td>${escapeHtml(e.ChildAge||"")}</td>
         <td>${escapeHtml(congregation)}</td>
@@ -2387,6 +2633,7 @@ function renderTable(){
           <div class="act-stack">
             <button type="button" class="act-btn" onclick="editingRowId='${id}'; renderTable();">${ICON_EDIT} Edit</button>
             <button type="button" class="act-btn ghost" onclick="previewChildPdf(currentFiltered[${idx}], this)">${ICON_EYE} View PDF</button>
+            ${dupMap[id || "(no id)"] ? `<button type="button" class="act-btn" onclick="mergeFromRow('${id}', this)">${ICON_MERGE} Merge</button>` : ""}
             <button type="button" class="act-btn ghost" onclick="archiveOne('${id}', this)">${ICON_ARCHIVE} Archive</button>
           </div>
         </td>
@@ -2476,6 +2723,7 @@ document.getElementById("clear-filters").addEventListener("click", ()=>{
   document.getElementById("filter-class").value = "";
   document.getElementById("filter-photo").value = "";
   document.getElementById("filter-status").value = "";
+  dupOnly = false;
   document.getElementById("sort-by").value = "name-asc";
   renderTable();
 });
@@ -2498,6 +2746,16 @@ document.getElementById("clear-filters").addEventListener("click", ()=>{
 document.getElementById("print-report").addEventListener("click", ()=>{
   window.print();
 });
+
+// Opened from a notification link (#admin, #admin=<id>, #coordinator or #coordinator=<id>)? Jump to that tab; the passcode is still required.
+(function openFromHash(){
+  const m = (location.hash || "").match(/^#(admin|coordinator)(?:=([\w\-%]+))?/);
+  if(!m) return;
+  const id = m[2] ? decodeURIComponent(m[2]) : "";
+  if(m[1] === "admin") pendingFocusId = id; else pendingCoordFocusId = id;
+  const tab = document.querySelector('.tab-btn[data-tab="' + m[1] + '"]');
+  if(tab) tab.click();
+})();
 
 </script>
 <div id="attendance-print-view">
