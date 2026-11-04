@@ -510,13 +510,13 @@ body.printing-attendance #attendance-print-view{ display:block; padding:0; }
 #att-print-table{ margin-bottom:14px; }
 #att-print-table th, #att-print-table td, #att-visitor-table th, #att-visitor-table td{ border:1.2px solid #555; padding:4px 6px; text-align:center; }
 #att-print-table th, #att-visitor-table th{ background:#EDE6DA; font-size:14px; font-weight:800; height:34px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-#att-print-table td, #att-visitor-table td{ height:42px; vertical-align:middle; font-size:15px; }
+#att-print-table td, #att-visitor-table td{ height:var(--att-row-h,42px); vertical-align:middle; font-size:var(--att-cell-fs,15px); }
 #att-print-table td:nth-child(2), #att-visitor-table td:nth-child(2){ text-align:left; padding-left:10px; }
-#att-print-table td:nth-child(2){ font-size:18px; font-weight:700; line-height:1.2; }
+#att-print-table td:nth-child(2){ font-size:var(--att-name-fs,18px); font-weight:700; line-height:1.2; }
 #att-print-table th:nth-child(1), #att-visitor-table th:nth-child(1){ width:42px; }
 #att-print-table th:nth-child(2), #att-visitor-table th:nth-child(2){ width:30%; }
 #att-print-table th:nth-child(3), #att-visitor-table th:nth-child(3){ width:78px; }
-#att-print-table td:nth-child(3){ font-size:15px; font-weight:700; }
+#att-print-table td:nth-child(3){ font-size:var(--att-cell-fs,15px); font-weight:700; }
 #att-print-table tr, #att-visitor-table tr{ break-inside:avoid; page-break-inside:avoid; }
 #att-print-table.dense th:nth-child(n+4), #att-visitor-table.dense th:nth-child(n+4){ font-size:11px; padding:2px 1px; letter-spacing:-.2px; }
 #att-visitor-table{ break-inside:avoid; page-break-inside:avoid; }
@@ -2532,6 +2532,7 @@ function ageOnDate(dobStr, ref, isZh, fallback){
   return isZh ? `${y}\u5c81${mo}\u6708` : `${y}y ${mo}m`;
 }
 
+const ATT_ROWS_AREA_PX = 425;   // approx. height left for table rows on one A4 landscape page (px)
 function buildAttendancePrintView(congregation, className, fromMonth, toMonth, year, sourceEntries){
   // clone the real page header (LitKids wordmark + flame-as-"i" + KIDS CHURCH MINISTRY + TOW logo)
   // so the print view matches the site exactly instead of a hand-rebuilt approximation
@@ -2597,6 +2598,15 @@ function buildAttendancePrintView(congregation, className, fromMonth, toMonth, y
   const noLabel = attendanceLabel(congregation, "no");
   const nameLabel = attendanceLabel(congregation, "name");
 
+  // Fit everything on ONE page where possible: share the available height between the registered rows
+  // and the visitor rows. Very large classes drop to a minimum row height and continue on a second page.
+  const totalRows = Math.max(students.length, 1) + 5;
+  const rowH = Math.max(24, Math.min(46, Math.floor(ATT_ROWS_AREA_PX / totalRows)));
+  const view = document.getElementById("attendance-print-view");
+  view.style.setProperty("--att-row-h", rowH + "px");
+  view.style.setProperty("--att-name-fs", Math.min(18, Math.max(13, Math.round(rowH * 0.5))) + "px");
+  view.style.setProperty("--att-cell-fs", Math.min(15, Math.max(12, Math.round(rowH * 0.4))) + "px");
+
   let html = `<thead><tr><th>${noLabel}</th><th>${nameLabel}</th><th>${ageLabel}</th>` + dates.map(d=>`<th>${d}</th>`).join("") + "</tr></thead><tbody>";
   if(students.length === 0){
     html += `<tr><td colspan="${3+dates.length}" style="text-align:center;color:#888;">${attendanceLabel(congregation,"noStudents")}</td></tr>`;
@@ -2615,7 +2625,7 @@ function buildAttendancePrintView(congregation, className, fromMonth, toMonth, y
   // above, for walk-in visitors to write their names by hand - only the Name column
   // is left empty for handwriting.
   document.getElementById("att-visitor-heading").textContent = attendanceLabel(congregation, "visitors");
-  const visitorRowCount = 6;
+  const visitorRowCount = 5;
   let visitorHtml = `<thead><tr><th>${noLabel}</th><th>${nameLabel}</th><th>${ageLabel}</th>` + dates.map(d=>`<th>${d}</th>`).join("") + "</tr></thead><tbody>";
   for(let i=0;i<visitorRowCount;i++){
     visitorHtml += `<tr><td>${i+1}</td><td></td><td></td>` + dates.map(()=>"<td></td>").join("") + "</tr>";
