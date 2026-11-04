@@ -1057,6 +1057,45 @@ function base64ToBytes(b64){
   return bytes;
 }
 
+
+// ---------- Text tidy-up: sentence case / proper case, even when typed in ALL CAPS ----------
+// Names -> "Lim Hao Xuan". Addresses, schools etc. -> "Taman Sri Andalas" (only when typed all CAPS or all lowercase).
+// Allergy / condition / medication notes -> "Peanut allergy." style sentence case. Chinese, emails, numbers are untouched.
+function tidyIsNone(t) { return /^(n\/?a|nil|none|-+)$/i.test(t); }
+function tidyCapRun(run, offset, whole) {
+  if (offset > 0 && /[0-9]/.test(whole.charAt(offset - 1))) return /^(st|nd|rd|th)$/i.test(run) ? run.toLowerCase() : run;   // 3rd, 12A ...
+  if (run.length === 1) return run.toUpperCase();
+  return (run === run.toUpperCase() || run === run.toLowerCase()) ? run.charAt(0).toUpperCase() + run.slice(1).toLowerCase() : run; // keep McDonald, DeSouza
+}
+function tidyName(v) {
+  var t = String(v == null ? "" : v).replace(/\s+/g, " ").trim();
+  if (!t || tidyIsNone(t)) return t;
+  return t.replace(/[A-Za-z]+/g, function(run, offset) { return tidyCapRun(run, offset, t); });
+}
+function tidyUniform(t) {
+  var letters = t.replace(/[^A-Za-z]/g, "");
+  return !!letters && (letters === letters.toUpperCase() || letters === letters.toLowerCase());
+}
+function tidyTitle(v) {
+  var t = String(v == null ? "" : v).replace(/\s+/g, " ").trim();
+  if (!t || tidyIsNone(t) || !tidyUniform(t)) return t;
+  return tidyName(t);
+}
+function tidySentence(v) {
+  var t = String(v == null ? "" : v).replace(/\s+/g, " ").trim();
+  if (!t || tidyIsNone(t) || !tidyUniform(t)) return t;
+  return t.toLowerCase().replace(/(^|[.!?]\s+)([a-z])/g, function(m, p, c) { return p + c.toUpperCase(); });
+}
+
+const TIDY_FORM_NAME = ["c-fullname","c-nickname","p-father-name","p-mother-name","e-name","pu1-name","pu2-name","d-name","d-signature"];
+const TIDY_FORM_TITLE = ["c-school","c-grade","c-address","ch-group","e-relationship","pu1-relation","pu2-relation"];
+const TIDY_FORM_SENT = ["m-allergy-detail","m-condition-detail","m-medication-detail"];
+// tidy as people type/leave a box, so they see the corrected capitals before they submit
+[[TIDY_FORM_NAME, tidyName], [TIDY_FORM_TITLE, tidyTitle], [TIDY_FORM_SENT, tidySentence]].forEach(([ids, fn]) => ids.forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener("blur", () => { const nv = fn(el.value); if(nv !== el.value) el.value = nv; });
+}));
+
 async function previewChildPdf(entry, btn){
   if(typeof PDFLib === "undefined" || typeof fontkit === "undefined"){
     showToast("PDF tools are still loading - please try again in a few seconds.", "err");
@@ -1288,7 +1327,13 @@ document.getElementById("child-form").addEventListener("submit", async (e)=>{
   const statusEl = document.getElementById("submit-status");
   const btn = document.getElementById("submit-btn");
 
-  const val = id => (document.getElementById(id) || {}).value || "";
+  const val = id => {
+    let v = (document.getElementById(id) || {}).value || "";
+    if(TIDY_FORM_NAME.indexOf(id) !== -1) v = tidyName(v);
+    else if(TIDY_FORM_TITLE.indexOf(id) !== -1) v = tidyTitle(v);
+    else if(TIDY_FORM_SENT.indexOf(id) !== -1) v = tidySentence(v);
+    return v;
+  };
   const radio = name => { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : ""; };
 
   if(!val("c-fullname") || !val("p-father-name") && !val("p-mother-name")){
@@ -2826,6 +2871,8 @@ async function saveEntryEdits(id, btn){
     PhotoPermission: v("edit-photo"),
     Status: v("edit-status")
   };
+  ["ChildFullName","ChildNickname","FatherName","MotherName"].forEach(k => { if(typeof fields[k] === "string") fields[k] = tidyName(fields[k]); });
+  ["AllergyDetail","ConditionDetail"].forEach(k => { if(typeof fields[k] === "string") fields[k] = tidySentence(fields[k]); });
   try{
     const res = await fetch(SHEET_ENDPOINT, {
       method: "POST",
