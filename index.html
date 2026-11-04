@@ -497,21 +497,30 @@
   .verse-quote{ background:none !important; -webkit-text-fill-color:#5b4636 !important; color:#5b4636 !important; }
 }
 #attendance-print-view{ display:none; }
-body.printing-attendance #attendance-print-view{ display:block; padding:20px; }
-#att-header-clone-slot{ margin-bottom:10px; }
+body.printing-attendance #attendance-print-view{ display:block; padding:0; }
+#att-header-clone-slot{ margin-bottom:6px; zoom:.62; }
 #att-header-clone-slot .lang-toggle{ display:none; }
-.att-title{ text-align:center; border-top:2px solid var(--gold); padding-top:10px; margin-bottom:14px; }
-.att-title h2{ margin:0; font-size:18px; color:var(--ink); }
-.att-title p{ margin:4px 0 0; font-size:12px; color:var(--ink-soft); }
-#att-print-table{ width:100%; border-collapse:collapse; font-size:11px; margin-bottom:16px; }
-#att-print-table th, #att-print-table td{ border:1px solid #999; padding:5px 6px; text-align:center; }
-#att-print-table td:nth-child(2){ text-align:left; }
-#att-visitor-table{ width:100%; border-collapse:collapse; font-size:11px; }
-#att-visitor-table th, #att-visitor-table td{ border:1px solid #999; padding:5px 6px; text-align:center; }
-#att-visitor-table td:nth-child(2){ text-align:left; }
-#att-visitor-table th:nth-child(2), #att-visitor-table td:nth-child(2){ min-width:140px; }
-#att-visitor-table td{ height:26px; }
-.att-visitor-heading{ font-size:12px; font-weight:700; color:var(--coral-dark); margin:6px 0 6px; }
+.att-title{ display:flex; align-items:center; gap:18px; border-top:3px solid var(--gold); padding-top:8px; margin-bottom:10px; }
+.att-year{ font-size:44px; font-weight:800; line-height:1; color:var(--coral-dark); padding-right:18px; border-right:3px solid var(--gold); }
+.att-title .att-text{ flex:1; text-align:center; }
+.att-title h2{ margin:0; font-size:26px; color:var(--ink); }
+.att-title p{ margin:3px 0 0; font-size:15px; color:var(--ink); font-weight:600; }
+.att-title p.att-agenote{ font-size:12px; font-weight:500; color:var(--ink-soft); }
+#att-print-table, #att-visitor-table{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:15px; }
+#att-print-table{ margin-bottom:14px; }
+#att-print-table th, #att-print-table td, #att-visitor-table th, #att-visitor-table td{ border:1.2px solid #555; padding:4px 6px; text-align:center; }
+#att-print-table th, #att-visitor-table th{ background:#EDE6DA; font-size:14px; font-weight:800; height:34px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+#att-print-table td, #att-visitor-table td{ height:42px; vertical-align:middle; font-size:15px; }
+#att-print-table td:nth-child(2), #att-visitor-table td:nth-child(2){ text-align:left; padding-left:10px; }
+#att-print-table td:nth-child(2){ font-size:18px; font-weight:700; line-height:1.2; }
+#att-print-table th:nth-child(1), #att-visitor-table th:nth-child(1){ width:42px; }
+#att-print-table th:nth-child(2), #att-visitor-table th:nth-child(2){ width:30%; }
+#att-print-table th:nth-child(3), #att-visitor-table th:nth-child(3){ width:78px; }
+#att-print-table td:nth-child(3){ font-size:15px; font-weight:700; }
+#att-print-table tr, #att-visitor-table tr{ break-inside:avoid; page-break-inside:avoid; }
+#att-print-table.dense th:nth-child(n+4), #att-visitor-table.dense th:nth-child(n+4){ font-size:11px; padding:2px 1px; letter-spacing:-.2px; }
+#att-visitor-table{ break-inside:avoid; page-break-inside:avoid; }
+.att-visitor-heading{ break-after:avoid; page-break-after:avoid; font-size:15px; font-weight:800; color:var(--coral-dark); margin:8px 0 6px; }
 </style>
 </head>
 <body>
@@ -2512,6 +2521,17 @@ document.getElementById("att-export-coord").addEventListener("click", ()=>{
 });
 
 // ---------- printable attendance sheet with logos ----------
+// Age (years + months) of a child on a given date, from the date of birth on file.
+function ageOnDate(dobStr, ref, isZh, fallback){
+  const m = String(dobStr || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(!m) return fallback ? String(fallback) : "";
+  let months = (ref.getFullYear() - (+m[1])) * 12 + (ref.getMonth() - (+m[2] + -1));
+  if(ref.getDate() < (+m[3])) months -= 1;
+  if(months < 0) months = 0;
+  const y = Math.floor(months / 12), mo = months % 12;
+  return isZh ? `${y}\u5c81${mo}\u6708` : `${y}y ${mo}m`;
+}
+
 function buildAttendancePrintView(congregation, className, fromMonth, toMonth, year, sourceEntries){
   // clone the real page header (LitKids wordmark + flame-as-"i" + KIDS CHURCH MINISTRY + TOW logo)
   // so the print view matches the site exactly instead of a hand-rebuilt approximation
@@ -2553,36 +2573,52 @@ function buildAttendancePrintView(congregation, className, fromMonth, toMonth, y
 
   document.getElementById("att-heading").textContent = attendanceLabel(congregation, "heading");
   const classWithAge = ageLabelFor(className) ? `${className} (${ageLabelFor(className)})` : className;
+  const isZhSheet = congregation === "Chinese";
+  // the year sits big on the left; the period line keeps just the month(s)
+  const monthsOnly = fromMonth === toMonth
+    ? (isZhSheet ? MONTH_NAMES_ZH : MONTH_NAMES)[fromMonth-1]
+    : (isZhSheet ? MONTH_NAMES_ZH : MONTH_NAMES)[fromMonth-1] + (isZhSheet ? "\u81f3" : " - ") + (isZhSheet ? MONTH_NAMES_ZH : MONTH_NAMES)[toMonth-1];
+  document.getElementById("att-year").textContent = year;
   document.getElementById("att-subheading").textContent =
-    congregation === "Chinese"
-      ? `${serviceLabelZh(congregation)} \u2013 ${classWithAge} \u2013 ${periodLabelForPrint(fromMonth, toMonth, year, true)}`
-      : `${congregation} Service \u2013 ${classWithAge} \u2013 ${periodLabelForPrint(fromMonth, toMonth, year, false)}`;
+    isZhSheet
+      ? `${serviceLabelZh(congregation)} \u2013 ${classWithAge} \u2013 ${monthsOnly}`
+      : `${congregation} Service \u2013 ${classWithAge} \u2013 ${monthsOnly}`;
 
   const dayType = dayTypeForClass(congregation, className);
-  const dates = datesForDayTypeRange(year, fromMonth, toMonth, dayType);
+  const fullDates = datesForDayTypeRange(year, fromMonth, toMonth, dayType);
+  const dates = fullDates.map(d => d.slice(0, 5));          // DD/MM only - the year is shown on top
+  const refParts = (fullDates[0] || `01/${String(fromMonth).padStart(2,"0")}/${year}`).split("/");
+  const refDate = new Date(+refParts[2], +refParts[1] - 1, +refParts[0]);
+  document.getElementById("att-agenote").textContent = isZhSheet
+    ? `\u5e74\u9f84\u622a\u81f3 ${refParts.join("/")}`
+    : `Age as at ${refParts.join("/")} (first date on this sheet)`;
+  const ageLabel = isZhSheet ? "\u5e74\u9f84" : "Age";
   const students = sourceEntries.filter(e => inClass(e, className) && (e.Status||"Active") !== "Inactive").slice().sort(byChildName);
   const noLabel = attendanceLabel(congregation, "no");
   const nameLabel = attendanceLabel(congregation, "name");
 
-  let html = `<thead><tr><th>${noLabel}</th><th>${nameLabel}</th>` + dates.map(d=>`<th>${d}</th>`).join("") + "</tr></thead><tbody>";
+  let html = `<thead><tr><th>${noLabel}</th><th>${nameLabel}</th><th>${ageLabel}</th>` + dates.map(d=>`<th>${d}</th>`).join("") + "</tr></thead><tbody>";
   if(students.length === 0){
-    html += `<tr><td colspan="${2+dates.length}" style="text-align:center;color:#888;">${attendanceLabel(congregation,"noStudents")}</td></tr>`;
+    html += `<tr><td colspan="${3+dates.length}" style="text-align:center;color:#888;">${attendanceLabel(congregation,"noStudents")}</td></tr>`;
   } else {
     students.forEach((s,i)=>{
-      html += `<tr><td>${i+1}</td><td>${escapeHtml(s.ChildFullName||"")}</td>` + dates.map(()=>"<td></td>").join("") + "</tr>";
+      html += `<tr><td>${i+1}</td><td>${escapeHtml(s.ChildFullName||"")}</td><td>${escapeHtml(ageOnDate(s.ChildDob, refDate, isZhSheet, s.ChildAge))}</td>` + dates.map(()=>"<td></td>").join("") + "</tr>";
     });
   }
   html += "</tbody>";
   document.getElementById("att-print-table").innerHTML = html;
+  const dense = dates.length > 8;
+  document.getElementById("att-print-table").classList.toggle("dense", dense);
+  document.getElementById("att-visitor-table").classList.toggle("dense", dense);
 
   // blank table underneath, same columns and format as the registered-student table
   // above, for walk-in visitors to write their names by hand - only the Name column
   // is left empty for handwriting.
   document.getElementById("att-visitor-heading").textContent = attendanceLabel(congregation, "visitors");
   const visitorRowCount = 6;
-  let visitorHtml = `<thead><tr><th>${noLabel}</th><th>${nameLabel}</th>` + dates.map(d=>`<th>${d}</th>`).join("") + "</tr></thead><tbody>";
+  let visitorHtml = `<thead><tr><th>${noLabel}</th><th>${nameLabel}</th><th>${ageLabel}</th>` + dates.map(d=>`<th>${d}</th>`).join("") + "</tr></thead><tbody>";
   for(let i=0;i<visitorRowCount;i++){
-    visitorHtml += `<tr><td>${i+1}</td><td></td>` + dates.map(()=>"<td></td>").join("") + "</tr>";
+    visitorHtml += `<tr><td>${i+1}</td><td></td><td></td>` + dates.map(()=>"<td></td>").join("") + "</tr>";
   }
   visitorHtml += "</tbody>";
   document.getElementById("att-visitor-table").innerHTML = visitorHtml;
@@ -2890,8 +2926,12 @@ document.getElementById("print-report").addEventListener("click", ()=>{
 <div id="attendance-print-view">
   <div id="att-header-clone-slot"></div>
   <div class="att-title">
-    <h2 id="att-heading">Attendance Sheet</h2>
-    <p id="att-subheading"></p>
+    <div class="att-year" id="att-year"></div>
+    <div class="att-text">
+      <h2 id="att-heading">Attendance Sheet</h2>
+      <p id="att-subheading"></p>
+      <p class="att-agenote" id="att-agenote"></p>
+    </div>
   </div>
   <table id="att-print-table"></table>
   <p class="att-visitor-heading" id="att-visitor-heading">For Visitors</p>
