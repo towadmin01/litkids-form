@@ -503,12 +503,13 @@ body.printing-attendance #attendance-print-view{ display:block; padding:0; }
 .att-title{ display:flex; align-items:center; gap:18px; border-top:3px solid var(--gold); padding-top:8px; margin-bottom:10px; }
 .att-year{ font-size:44px; font-weight:800; line-height:1; color:var(--coral-dark); padding-right:18px; border-right:3px solid var(--gold); }
 .att-title .att-text{ flex:1; text-align:center; }
-.att-title h2{ margin:0; font-size:26px; color:var(--ink); }
-.att-title p{ margin:3px 0 0; font-size:15px; color:var(--ink); font-weight:600; }
+.att-title h2{ margin:0; font-size:24px; color:var(--ink); line-height:1.2; }
+.att-title h2 .att-agerange{ font-size:15px; font-weight:600; color:var(--ink-soft); }
+.att-title p{ margin:4px 0 0; font-size:17px; color:var(--ink); font-weight:700; }
 .att-title p.att-agenote{ font-size:12px; font-weight:500; color:var(--ink-soft); }
 #att-print-table, #att-visitor-table{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:15px; }
 #att-print-table{ margin-bottom:14px; }
-#att-print-table th, #att-print-table td, #att-visitor-table th, #att-visitor-table td{ border:1.2px solid #555; padding:4px 6px; text-align:center; }
+#att-print-table th, #att-print-table td, #att-visitor-table th, #att-visitor-table td{ border:1.2px solid #555; padding:1px 6px; text-align:center; }
 #att-print-table th, #att-visitor-table th{ background:#EDE6DA; font-size:14px; font-weight:800; height:34px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 #att-print-table td, #att-visitor-table td{ height:var(--att-row-h,42px); vertical-align:middle; font-size:var(--att-cell-fs,15px); }
 #att-print-table td:nth-child(2), #att-visitor-table td:nth-child(2){ text-align:left; padding-left:10px; }
@@ -2574,10 +2575,11 @@ function ageOnDate(dobStr, ref, isZh, fallback){
   if(ref.getDate() < (+m[3])) months -= 1;
   if(months < 0) months = 0;
   const y = Math.floor(months / 12), mo = months % 12;
-  return isZh ? `${y}\u5c81${mo}\u6708` : `${y}y ${mo}m`;
+  return String(y);   // whole years only
 }
 
-const ATT_ROWS_AREA_PX = 425;   // approx. height left for table rows on one A4 landscape page (px)
+const ATT_SPARE_ROWS = 3;     // blank numbered rows after the last child
+const ATT_ROWS_AREA_PX = 446;   // approx. height left for table rows on one A4 landscape page (px)
 function buildAttendancePrintView(congregation, className, fromMonth, toMonth, year, sourceEntries){
   // clone the real page header (LitKids wordmark + flame-as-"i" + KIDS CHURCH MINISTRY + TOW logo)
   // so the print view matches the site exactly instead of a hand-rebuilt approximation
@@ -2617,27 +2619,22 @@ function buildAttendancePrintView(congregation, className, fromMonth, toMonth, y
     }
   }
 
-  document.getElementById("att-heading").textContent = attendanceLabel(congregation, "heading");
-  const classWithAge = ageLabelFor(className) ? `${className} (${ageLabelFor(className)})` : className;
   const isZhSheet = congregation === "Chinese";
-  // the year sits big on the left; the period line keeps just the month(s)
-  const monthsOnly = fromMonth === toMonth
-    ? (isZhSheet ? MONTH_NAMES_ZH : MONTH_NAMES)[fromMonth-1]
-    : (isZhSheet ? MONTH_NAMES_ZH : MONTH_NAMES)[fromMonth-1] + (isZhSheet ? "\u81f3" : " - ") + (isZhSheet ? MONTH_NAMES_ZH : MONTH_NAMES)[toMonth-1];
-  document.getElementById("att-year").textContent = year;
-  document.getElementById("att-subheading").textContent =
-    isZhSheet
-      ? `${serviceLabelZh(congregation)} \u2013 ${classWithAge} \u2013 ${monthsOnly}`
-      : `${congregation} Service \u2013 ${classWithAge} \u2013 ${monthsOnly}`;
+  const MN = isZhSheet ? MONTH_NAMES_ZH : MONTH_NAMES;
+  const periodText = fromMonth === toMonth ? MN[fromMonth-1] : MN[fromMonth-1] + (isZhSheet ? " \u81f3 " : " - ") + MN[toMonth-1];
+  const headingEl = document.getElementById("att-heading");
+  headingEl.textContent = className;                                  // the class is the title now
+  const ageLbl = ageLabelFor(className);
+  if(ageLbl){ const sp = document.createElement("span"); sp.className = "att-agerange"; sp.textContent = " (" + ageLbl + ")"; headingEl.appendChild(sp); }
+  document.getElementById("att-year").textContent = year;             // year stays big on the left
+  document.getElementById("att-subheading").textContent = periodText; // period sits under the class name
+  document.getElementById("att-agenote").textContent = "";
 
   const dayType = dayTypeForClass(congregation, className);
   const fullDates = datesForDayTypeRange(year, fromMonth, toMonth, dayType);
   const dates = fullDates.map(d => d.slice(0, 5));          // DD/MM only - the year is shown on top
   const refParts = (fullDates[0] || `01/${String(fromMonth).padStart(2,"0")}/${year}`).split("/");
   const refDate = new Date(+refParts[2], +refParts[1] - 1, +refParts[0]);
-  document.getElementById("att-agenote").textContent = isZhSheet
-    ? `\u5e74\u9f84\u622a\u81f3 ${refParts.join("/")}`
-    : `Age as at ${refParts.join("/")} (first date on this sheet)`;
   const ageLabel = isZhSheet ? "\u5e74\u9f84" : "Age";
   const students = sourceEntries.filter(e => inClass(e, className) && (e.Status||"Active") !== "Inactive").slice().sort(byChildName);
   const noLabel = attendanceLabel(congregation, "no");
@@ -2645,8 +2642,8 @@ function buildAttendancePrintView(congregation, className, fromMonth, toMonth, y
 
   // Fit everything on ONE page where possible: share the available height between the registered rows
   // and the visitor rows. Very large classes drop to a minimum row height and continue on a second page.
-  const totalRows = Math.max(students.length, 1) + 5;
-  const rowH = Math.max(24, Math.min(46, Math.floor(ATT_ROWS_AREA_PX / totalRows)));
+  const totalRows = Math.max(students.length, 1) + ATT_SPARE_ROWS + 5;
+  const rowH = Math.max(22, Math.min(46, Math.floor(ATT_ROWS_AREA_PX / totalRows)));
   const view = document.getElementById("attendance-print-view");
   view.style.setProperty("--att-row-h", rowH + "px");
   view.style.setProperty("--att-name-fs", Math.min(18, Math.max(13, Math.round(rowH * 0.5))) + "px");
@@ -2659,6 +2656,10 @@ function buildAttendancePrintView(congregation, className, fromMonth, toMonth, y
     students.forEach((s,i)=>{
       html += `<tr><td>${i+1}</td><td>${escapeHtml(s.ChildFullName||"")}</td><td>${escapeHtml(ageOnDate(s.ChildDob, refDate, isZhSheet, s.ChildAge))}</td>` + dates.map(()=>"<td></td>").join("") + "</tr>";
     });
+    // a few spare rows for children who join part-way through the period (the sheet isn't reprinted every week)
+    for(let k = 1; k <= ATT_SPARE_ROWS; k++){
+      html += `<tr><td>${students.length + k}</td><td></td><td></td>` + dates.map(()=>"<td></td>").join("") + "</tr>";
+    }
   }
   html += "</tbody>";
   document.getElementById("att-print-table").innerHTML = html;
